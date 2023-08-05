@@ -197,5 +197,12 @@ namespace SuperAdventure
         {
             File.WriteAllText(PLAYER_DATA_FILE_NAME, player.ToXmlString());
         }
+
+        private void btnTrade_Click(object sender, EventArgs e)
+        {
+            // TradingScreen tradingScreen = new TradingScreen();
+            // tradingScreen.StartPosition = FormStartPosition.CenterParent;
+            // tradingScreen.ShowDialog(this);
+        }
     }
 }
