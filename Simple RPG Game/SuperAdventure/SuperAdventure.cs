@@ -37,6 +37,11 @@ namespace SuperAdventure
             UpdatePlayerStats();
         }
 
+        private void cboWeapons_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            player.CurrentWeapon = (Weapon)cboWeapons.SelectedItem;
+        }
+
         private void UpdatePlayerStats()
         {
             lblHitPoints.Text = player.CurrentHitPoints.ToString();
@@ -263,11 +268,23 @@ namespace SuperAdventure
             }
             else
             {
+                // 删除事件处理程序，以免在更新组合框时触发事件
+                cboWeapons.SelectedIndexChanged -= cboWeapons_SelectedIndexChanged;
+                // 更新武器组合框
                 cboWeapons.DataSource = weapons;
+                // 重新添加事件处理程序，以便在玩家选择新武器时触发事件
+                cboWeapons.SelectedIndexChanged += cboWeapons_SelectedIndexChanged;
                 cboWeapons.DisplayMember = "武器名称";
                 cboWeapons.ValueMember = "ID";
 
-                cboWeapons.SelectedIndex = 0;
+                if (player.CurrentWeapon != null)
+                {
+                    cboWeapons.SelectedItem = player.CurrentWeapon;
+                }
+                else
+                {
+                    cboWeapons.SelectedIndex = 0;
+                }
             }
         }
 
