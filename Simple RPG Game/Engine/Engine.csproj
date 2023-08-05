@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="LivingCreature.cs" />
     <Compile Include="HealingPotion.cs" />
+    <Compile Include="MessageEventArgs.cs" />
     <Compile Include="Monster .cs" />
     <Compile Include="Quest.cs" />
     <Compile Include="Location.cs" />
