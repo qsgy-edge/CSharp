@@ -11,7 +11,13 @@ namespace Engine
         public int ExperiencePoints { get; set; }
 
         // 玩家的等级
-        public int Level { get; set; }
+        public int Level
+        {
+            get
+            {
+                return ((ExperiencePoints / 100) + 1);
+            }
+        }
 
         // 玩家的位置
         public Location CurrentLocation { get; set; }
@@ -23,11 +29,10 @@ namespace Engine
         public List<PlayerQuest> Quests { get; set; }
 
         // 构造函数
-        public Player(int currentHitPoints, int maximumHitPoints, int gold, int experiencePoints, int level) : base(currentHitPoints, maximumHitPoints)
+        public Player(int currentHitPoints, int maximumHitPoints, int gold, int experiencePoints) : base(currentHitPoints, maximumHitPoints)
         {
             Gold = gold;
             ExperiencePoints = experiencePoints;
-            Level = level;
 
             Inventory = new List<InventoryItem>();
             Quests = new List<PlayerQuest>();
