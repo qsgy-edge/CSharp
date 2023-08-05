@@ -97,6 +97,10 @@ namespace Engine
             // Create each location
             Location home = new Location(LOCATION_ID_HOME, "家", "你的房子 你真得好好收拾收拾了");
             Location townSquare = new Location(LOCATION_ID_TOWN_SQUARE, "城镇广场", "你看到一个喷泉。");
+            Vendor bobTheRatCatcher = new Vendor("捕鼠人鲍勃");
+            bobTheRatCatcher.AddItemToInventory(ItemByID(ITEM_ID_PIECE_OF_FUR), 5);
+            bobTheRatCatcher.AddItemToInventory(ItemByID(ITEM_ID_RAT_TAIL), 3);
+            townSquare.VendorWorkingHere = bobTheRatCatcher;
             Location alchemistHut = new Location(LOCATION_ID_ALCHEMIST_HUT, "炼金术士的小屋", "货架上有很多奇怪的植物。");
             alchemistHut.QuestAvailableHere = QuestByID(QUEST_ID_CLEAR_ALCHEMIST_GARDEN);
             Location alchemistsGarden = new Location(LOCATION_ID_ALCHEMISTS_GARDEN, "炼金术士的花园", "这里生长着许多植物。");

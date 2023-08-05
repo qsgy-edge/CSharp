@@ -20,6 +20,9 @@
         // 地点怪物
         public Monster MonsterLivingHere { get; set; }
 
+        // 地点商人
+        public Vendor VendorWorkingHere { get; set; }
+
         // 地点
         public Location LocationToNorth { get; set; }
 
