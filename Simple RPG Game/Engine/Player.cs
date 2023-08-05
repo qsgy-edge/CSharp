@@ -1,16 +1,69 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using System.Xml;
 
 namespace Engine
 {
     public class Player : LivingCreature
     {
-        // 玩家的金币
-        public int Gold { get; set; }
+        // 玩家的位置
+        private Location currentLocation;
+
+        // 玩家的武器
+        private Weapon currentWeapon;
 
         // 玩家的经验值
-        public int ExperiencePoints { get; private set; }
+        private int experiencePoints;
+
+        // 玩家的金币
+        private int gold;
+
+        // 构造函数
+        private Player(int currentHitPoints, int maximumHitPoints, int gold, int experiencePoints) : base(currentHitPoints, maximumHitPoints)
+        {
+            Gold = gold;
+            ExperiencePoints = experiencePoints;
+            Inventory = new BindingList<InventoryItem>();
+            Quests = new BindingList<PlayerQuest>();
+        }
+
+        public Location CurrentLocation
+        {
+            get { return currentLocation; }
+            set
+            {
+                currentLocation = value;
+                OnPropertyChanged("CurrentLocation");
+            }
+        }
+
+        public Weapon CurrentWeapon { get; set; }
+
+        public int ExperiencePoints
+        {
+            get { return experiencePoints; }
+            private set
+            {
+                experiencePoints = value;
+                OnPropertyChanged("ExperiencePoints");
+                OnPropertyChanged("Level");
+            }
+        }
+
+        public int Gold
+        {
+            get { return gold; }
+            set
+            {
+                gold = value;
+                OnPropertyChanged("Gold");
+            }
+        }
+
+        // 玩家的物品
+        public BindingList<InventoryItem> Inventory { get; set; }
 
         // 玩家的等级
         public int Level
@@ -21,25 +74,19 @@ namespace Engine
             }
         }
 
-        // 玩家的位置
-        public Location CurrentLocation { get; set; }
-
-        // 玩家的武器
-        public Weapon CurrentWeapon { get; set; }
-
-        // 玩家的物品
-        public List<InventoryItem> Inventory { get; set; }
+        // 玩家的药水列表
+        public List<HealingPotion> Potions
+        {
+            get { return Inventory.Where(ii => ii.Details is HealingPotion).Select(ii => ii.Details as HealingPotion).ToList(); }
+        }
 
         // 玩家的任务
-        public List<PlayerQuest> Quests { get; set; }
+        public BindingList<PlayerQuest> Quests { get; set; }
 
-        // 构造函数
-        private Player(int currentHitPoints, int maximumHitPoints, int gold, int experiencePoints) : base(currentHitPoints, maximumHitPoints)
+        // 玩家的武器列表
+        public List<Weapon> Weapons
         {
-            Gold = gold;
-            ExperiencePoints = experiencePoints;
-            Inventory = new List<InventoryItem>();
-            Quests = new List<PlayerQuest>();
+            get { return Inventory.Where(ii => ii.Details is Weapon).Select(ii => ii.Details as Weapon).ToList(); }
         }
 
         // 创建默认玩家
@@ -97,22 +144,29 @@ namespace Engine
             }
         }
 
-        // 判定玩家是否有必须的物品进入某个位置
-        public bool HasRequiredItemToEnterThisLocation(Location location)
+        // 玩家获取经验值
+        public void AddExperiencePoints(int experiencePointsToAdd)
         {
-            if (location.ItemRequiredToEnter == null)
-            {
-                // 没有物品要求
-                return true;
-            }
-            // 检查玩家的物品
-            return Inventory.Exists(ii => ii.Details.ID == location.ItemRequiredToEnter.ID);
+            ExperiencePoints += experiencePointsToAdd;
+            MaximumHitPoints = (Level * 10);
         }
 
-        // 判定玩家是否有该地点的任务
-        public bool HasThisQuest(Quest quest)
+        // 给与玩家任务奖励
+        public void AddItemToInventory(Item itemToAdd)
         {
-            return Quests.Exists(pq => pq.Details.ID == quest.ID);
+            InventoryItem item = Inventory.SingleOrDefault(ii => ii.Details.ID == itemToAdd.ID);
+            if (item == null)
+            {
+                // 玩家没有物品，添加物品
+                Inventory.Add(new InventoryItem(itemToAdd, 1));
+            }
+            else
+            {
+                // 玩家有物品，增加物品数量
+                item.Quantity++;
+            }
+            // 通知界面更新
+            OnPropertyChanged("Inventory");
         }
 
         // 判定玩家是否完成了该任务
@@ -136,7 +190,7 @@ namespace Engine
             // 检查玩家的物品
             foreach (QuestCompletionItem qci in quest.QuestCompletionItems)
             {
-                if (!Inventory.Exists(ii => ii.Details.ID == qci.Details.ID && ii.Quantity >= qci.Quantity))
+                if (!Inventory.Any(ii => ii.Details.ID == qci.Details.ID && ii.Quantity >= qci.Quantity))
                 {
                     return false;
                 }
@@ -145,42 +199,29 @@ namespace Engine
             return true;
         }
 
-        // 从玩家的物品中移除任务所需的物品
-        public void RemoveQuestCompletionItems(Quest quest)
+        // 判定玩家是否有必须的物品进入某个位置
+        public bool HasRequiredItemToEnterThisLocation(Location location)
         {
-            // 检查玩家的物品
-            foreach (QuestCompletionItem qci in quest.QuestCompletionItems)
+            if (location.ItemRequiredToEnter == null)
             {
-                InventoryItem item = Inventory.Find(ii => ii.Details.ID == qci.Details.ID);
-                if (item != null)
-                {
-                    // 玩家有物品，移除物品
-                    item.Quantity -= qci.Quantity;
-                }
+                // 没有物品要求
+                return true;
             }
+            // 检查玩家的物品
+            return Inventory.Any(ii => ii.Details.ID == location.ItemRequiredToEnter.ID);
         }
 
-        // 给与玩家任务奖励
-        public void AddItemToInventory(Item itemToAdd)
+        // 判定玩家是否有该地点的任务
+        public bool HasThisQuest(Quest quest)
         {
-            InventoryItem item = Inventory.Find(ii => ii.Details.ID == itemToAdd.ID);
-            if (item == null)
-            {
-                // 玩家没有物品，添加物品
-                Inventory.Add(new InventoryItem(itemToAdd, 1));
-            }
-            else
-            {
-                // 玩家有物品，增加物品数量
-                item.Quantity++;
-            }
+            return Quests.Any(pq => pq.Details.ID == quest.ID);
         }
 
         // 将任务标记为完成
         public void MarkQuestCompleted(Quest quest)
         {
             // 检查玩家的任务
-            PlayerQuest playerQuest = Quests.Find(pq => pq.Details.ID == quest.ID);
+            PlayerQuest playerQuest = Quests.SingleOrDefault(pq => pq.Details.ID == quest.ID);
             if (playerQuest != null)
             {
                 // 玩家有任务，标记任务为完成
@@ -188,11 +229,40 @@ namespace Engine
             }
         }
 
-        // 玩家获取经验值
-        public void AddExperiencePoints(int experiencePointsToAdd)
+        public void RemoveItemFromInventory(Item itemToRemove, int quantity = 1)
         {
-            ExperiencePoints += experiencePointsToAdd;
-            MaximumHitPoints = (Level * 10);
+            InventoryItem item = Inventory.SingleOrDefault(ii => ii.Details.ID == itemToRemove.ID);
+            if (item == null)
+            {
+                // 玩家没有物品，不做任何事
+            }
+            else
+            {
+                // 玩家有物品，减少物品数量
+                item.Quantity -= quantity;
+                // 如果物品数量为0，移除物品
+                if (item.Quantity < 0)
+                {
+                    Inventory.Remove(item);
+                }
+                // 通知界面更新
+                OnPropertyChanged("Inventory");
+            }
+        }
+
+        // 从玩家的物品中移除任务所需的物品
+        public void RemoveQuestCompletionItems(Quest quest)
+        {
+            // 检查玩家的物品
+            foreach (QuestCompletionItem qci in quest.QuestCompletionItems)
+            {
+                InventoryItem item = Inventory.SingleOrDefault(ii => ii.Details.ID == qci.Details.ID);
+                if (item != null)
+                {
+                    // 玩家有物品，移除物品
+                    RemoveItemFromInventory(item.Details, qci.Quantity);
+                }
+            }
         }
 
         // XML 序列化
@@ -258,6 +328,18 @@ namespace Engine
                 playerQuests.AppendChild(playerQuest);
             }
             return playerData.InnerXml; // 返回 XML 字符串
+        }
+
+        private void RaiseInventoryChangedEvent(Item item)
+        {
+            if (item is Weapon)
+            {
+                OnPropertyChanged("Weapons");
+            }
+            if (item is HealingPotion)
+            {
+                OnPropertyChanged("Potions");
+            }
         }
     }
 }
