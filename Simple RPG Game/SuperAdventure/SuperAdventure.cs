@@ -136,7 +136,7 @@ namespace SuperAdventure
                             rtbMessages.Text += newLocation.QuestAvailableHere.RewardItem.Name + Environment.NewLine;
                             rtbMessages.Text += Environment.NewLine;
 
-                            player.ExperiencePoints += newLocation.QuestAvailableHere.RewardExperiencePoints;
+                            player.AddExperiencePoints(newLocation.QuestAvailableHere.RewardExperiencePoints);
                             player.Gold += newLocation.QuestAvailableHere.RewardGold;
 
                             // 将奖励物品添加到玩家的库存中
@@ -342,7 +342,7 @@ namespace SuperAdventure
                 rtbMessages.Text += Environment.NewLine;
                 rtbMessages.Text += "你杀死了 " + currentMonster.Name + Environment.NewLine;
                 // 给予玩家经验值
-                player.ExperiencePoints += currentMonster.RewardExperiencePoints;
+                player.AddExperiencePoints(currentMonster.RewardExperiencePoints);
                 rtbMessages.Text += "你获得了 " + currentMonster.RewardExperiencePoints.ToString() + " 点经验值。" + Environment.NewLine;
                 // 给予玩家金币
                 player.Gold += currentMonster.RewardGold;

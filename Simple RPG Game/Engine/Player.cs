@@ -10,7 +10,7 @@ namespace Engine
         public int Gold { get; set; }
 
         // 玩家的经验值
-        public int ExperiencePoints { get; set; }
+        public int ExperiencePoints { get; private set; }
 
         // 玩家的等级
         public int Level
@@ -186,6 +186,13 @@ namespace Engine
                 // 玩家有任务，标记任务为完成
                 playerQuest.IsCompleted = true;
             }
+        }
+
+        // 玩家获取经验值
+        public void AddExperiencePoints(int experiencePointsToAdd)
+        {
+            ExperiencePoints += experiencePointsToAdd;
+            MaximumHitPoints = (Level * 10);
         }
 
         // XML 序列化
