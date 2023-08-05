@@ -9,7 +9,7 @@
         public int MaximumDamage { get; set; }
 
         // 构造函数
-        public Weapon(int id, string name, int minimumDamage, int maximumDamage) : base(id, name)
+        public Weapon(int id, string name, int minimumDamage, int maximumDamage,int price) : base(id, name,price)
         {
             MinimumDamage = minimumDamage;
             MaximumDamage = maximumDamage;
