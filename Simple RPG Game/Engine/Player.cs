@@ -47,31 +47,13 @@ namespace Engine
                 return true;
             }
             // 检查玩家的物品
-            foreach (InventoryItem ii in Inventory)
-            {
-                if (ii.Details.ID == location.ItemRequiredToEnter.ID)
-                {
-                    // 玩家有物品
-                    return true;
-                }
-            }
-            // 玩家没有物品
-            return false;
+            return Inventory.Exists(ii => ii.Details.ID == location.ItemRequiredToEnter.ID);
         }
 
         // 判定玩家是否有该地点的任务
         public bool HasThisQuest(Quest quest)
         {
-            foreach (PlayerQuest playerQuest in Quests)
-            {
-                if (playerQuest.Details.ID == quest.ID)
-                {
-                    // 玩家有任务
-                    return true;
-                }
-            }
-            // 玩家没有任务
-            return false;
+            return Quests.Exists(pq => pq.Details.ID == quest.ID);
         }
 
         // 判定玩家是否完成了该任务
@@ -95,23 +77,7 @@ namespace Engine
             // 检查玩家的物品
             foreach (QuestCompletionItem qci in quest.QuestCompletionItems)
             {
-                bool foundItemInPlayersInventory = false;
-                // 检查玩家的物品
-                foreach (InventoryItem ii in Inventory)
-                {
-                    if (ii.Details.ID == qci.Details.ID)
-                    {
-                        // 玩家有物品
-                        foundItemInPlayersInventory = true;
-                        if (ii.Quantity < qci.Quantity)
-                        {
-                            // 玩家没有足够的物品
-                            return false;
-                        }
-                    }
-                }
-                // 玩家没有物品
-                if (!foundItemInPlayersInventory)
+                if (!Inventory.Exists(ii => ii.Details.ID == qci.Details.ID && ii.Quantity >= qci.Quantity))
                 {
                     return false;
                 }
@@ -126,15 +92,11 @@ namespace Engine
             // 检查玩家的物品
             foreach (QuestCompletionItem qci in quest.QuestCompletionItems)
             {
-                // 检查玩家的物品
-                foreach (InventoryItem ii in Inventory)
+                InventoryItem item = Inventory.Find(ii => ii.Details.ID == qci.Details.ID);
+                if (item != null)
                 {
-                    if (ii.Details.ID == qci.Details.ID)
-                    {
-                        // 玩家有物品
-                        ii.Quantity -= qci.Quantity;
-                        break;
-                    }
+                    // 玩家有物品，移除物品
+                    item.Quantity -= qci.Quantity;
                 }
             }
         }
@@ -142,32 +104,28 @@ namespace Engine
         // 给与玩家任务奖励
         public void AddItemToInventory(Item itemToAdd)
         {
-            // 检查玩家的物品
-            foreach (InventoryItem ii in Inventory)
+            InventoryItem item = Inventory.Find(ii => ii.Details.ID == itemToAdd.ID);
+            if (item == null)
             {
-                if (ii.Details.ID == itemToAdd.ID)
-                {
-                    // 玩家有物品，数量加一
-                    ii.Quantity++;
-                    return;
-                }
+                // 玩家没有物品，添加物品
+                Inventory.Add(new InventoryItem(itemToAdd, 1));
             }
-            // 玩家没有物品，添加物品
-            Inventory.Add(new InventoryItem(itemToAdd, 1));
+            else
+            {
+                // 玩家有物品，增加物品数量
+                item.Quantity++;
+            }
         }
 
         // 将任务标记为完成
         public void MarkQuestCompleted(Quest quest)
         {
             // 检查玩家的任务
-            foreach (PlayerQuest pq in Quests)
+            PlayerQuest playerQuest = Quests.Find(pq => pq.Details.ID == quest.ID);
+            if (playerQuest != null)
             {
-                if (pq.Details.ID == quest.ID)
-                {
-                    // 玩家有任务，标记为完成
-                    pq.IsCompleted = true;
-                    return;
-                }
+                // 玩家有任务，标记任务为完成
+                playerQuest.IsCompleted = true;
             }
         }
     }
