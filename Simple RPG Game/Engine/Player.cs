@@ -150,5 +150,20 @@ namespace Engine
             // 玩家没有物品，添加物品
             Inventory.Add(new InventoryItem(itemToAdd, 1));
         }
+
+        // 将任务标记为完成
+        public void MarkQuestCompleted(Quest quest)
+        {
+            // 检查玩家的任务
+            foreach (PlayerQuest pq in Quests)
+            {
+                if (pq.Details.ID == quest.ID)
+                {
+                    // 玩家有任务，标记为完成
+                    pq.IsCompleted = true;
+                    return;
+                }
+            }
+        }
     }
 }

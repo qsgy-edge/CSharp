@@ -293,10 +293,133 @@ namespace SuperAdventure
 
         private void btnUseWeapon_Click(object sender, EventArgs e)
         {
+            // 获取当前选中的武器
+            Weapon currentWeapon = (Weapon)cboWeapons.SelectedItem;
+            // 计算对怪物造成的伤害
+            int damageToMonster = RandomNumberGenerator.NumberBetween(currentWeapon.MinimumDamage, currentWeapon.MaximumDamage);
+            // 对怪物造成伤害
+            currentMonster.CurrentHitPoints -= damageToMonster;
+            // 显示消息
+            rtbMessages.Text += "你对 " + currentMonster.Name + " 造成了 " + damageToMonster.ToString() + " 点伤害。" + Environment.NewLine;
+            // 判定怪物是否已经死亡
+            if (currentMonster.CurrentHitPoints <= 0)
+            {
+                // 怪物已经死亡
+                rtbMessages.Text += Environment.NewLine;
+                rtbMessages.Text += "你杀死了 " + currentMonster.Name + Environment.NewLine;
+                // 给予玩家经验值
+                player.ExperiencePoints += currentMonster.RewardExperiencePoints;
+                rtbMessages.Text += "你获得了 " + currentMonster.RewardExperiencePoints.ToString() + " 点经验值。" + Environment.NewLine;
+                // 给予玩家金币
+                player.Gold += currentMonster.RewardGold;
+                rtbMessages.Text += "你获得了 " + currentMonster.RewardGold.ToString() + " 金币。" + Environment.NewLine;
+                // 获得怪物的随机掉落物品
+                List<InventoryItem> lootedItems = new List<InventoryItem>();
+                // 添加物品到掉落物品列表
+                foreach (LootItem lootItem in currentMonster.LootTable)
+                {
+                    if (RandomNumberGenerator.NumberBetween(1, 100) <= lootItem.DropPercentage)
+                    {
+                        lootedItems.Add(new InventoryItem(lootItem.Details, 1));
+                    }
+                }
+                // 如果没有掉落物品
+                if (lootedItems.Count == 0)
+                {
+                    // 添加默认掉落物品
+                    foreach (LootItem lootItem in currentMonster.LootTable)
+                    {
+                        if (lootItem.IsDefaultItem)
+                        {
+                            lootedItems.Add(new InventoryItem(lootItem.Details, 1));
+                        }
+                    }
+                }
+                // 将掉落物品添加到玩家的库存中
+                foreach (InventoryItem inventoryItem in lootedItems)
+                {
+                    player.AddItemToInventory(inventoryItem.Details);
+
+                    rtbMessages.Text += "你获得了 " + inventoryItem.Quantity.ToString() + " 个 " + inventoryItem.Details.Name + Environment.NewLine;
+                }
+                // 刷新玩家的信息与物品
+                lblHitPoints.Text = player.CurrentHitPoints.ToString();
+                lblExperience.Text = player.ExperiencePoints.ToString();
+                lblGold.Text = player.Gold.ToString();
+                lblLevel.Text = player.Level.ToString();
+                // 刷新 UI
+                UpdateInventoryListInUI();
+                UpdateWeaponListInUI();
+                UpdatePotionListInUI();
+                // 添加空行
+                rtbMessages.Text += Environment.NewLine;
+                // 移动玩家到当前位置
+                MoveTo(player.CurrentLocation);
+            }
+            else
+            {
+                // 怪物仍然活着
+                // 计算对玩家造成的伤害
+                int damageToPlayer = RandomNumberGenerator.NumberBetween(0, currentMonster.MaximumDamage);
+                // 显示消息
+                rtbMessages.Text += "怪物对你造成了 " + damageToPlayer.ToString() + " 点伤害。" + Environment.NewLine;
+                // 对玩家造成伤害
+                player.CurrentHitPoints -= damageToPlayer;
+                // 刷新玩家的生命值
+                lblHitPoints.Text = player.CurrentHitPoints.ToString();
+
+                // 判定玩家是否死亡
+                if (player.CurrentHitPoints <= 0)
+                {
+                    // 显示消息
+                    rtbMessages.Text += "你被打败了。" + Environment.NewLine;
+                    // 移动玩家到“家”
+                    MoveTo(World.LocationByID(World.LOCATION_ID_HOME));
+                }
+            }
         }
 
         private void btnUsePotion_Click(object sender, EventArgs e)
         {
+            // 获取当前选中的药水
+            HealingPotion potion = (HealingPotion)cboPotions.SelectedItem;
+            // 治疗玩家
+            player.CurrentHitPoints = (player.CurrentHitPoints + potion.AmountToHeal);
+            // 治疗量不得超过玩家的最大生命值
+            if (player.CurrentHitPoints > player.MaximumHitPoints)
+            {
+                player.CurrentHitPoints = player.MaximumHitPoints;
+            }
+            // 从库存中移除药水
+            foreach (InventoryItem ii in player.Inventory)
+            {
+                if (ii.Details.ID == potion.ID)
+                {
+                    ii.Quantity--;
+                    break;
+                }
+            }
+            // 显示消息
+            rtbMessages.Text += "你喝了 " + potion.Name + Environment.NewLine;
+            // 怪物对玩家造成伤害
+            int damageToPlayer = RandomNumberGenerator.NumberBetween(0, currentMonster.MaximumDamage);
+            // 显示消息
+            rtbMessages.Text += "怪物对你造成了 " + damageToPlayer.ToString() + " 点伤害。" + Environment.NewLine;
+            // 对玩家造成伤害
+            player.CurrentHitPoints -= damageToPlayer;
+            // 判定玩家是否死亡
+            if (player.CurrentHitPoints <= 0)
+            {
+                // 显示消息
+                rtbMessages.Text += "你被打败了。" + Environment.NewLine;
+                // 移动玩家到“家”
+                MoveTo(World.LocationByID(World.LOCATION_ID_HOME));
+            }
+
+            // 刷新玩家 UI
+            lblHitPoints.Text = player.CurrentHitPoints.ToString();
+            UpdateInventoryListInUI();
+            UpdatePotionListInUI();
         }
     }
 }
