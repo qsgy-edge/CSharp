@@ -24,7 +24,11 @@ namespace SuperAdventure
             player = new Player(10, 10, 20, 0);
             MoveTo(World.LocationByID(World.LOCATION_ID_HOME));
             player.Inventory.Add(new InventoryItem(World.ItemByID(World.ITEM_ID_RUSTY_SWORD), 1));
+            UpdatePlayerStats();
+        }
 
+        private void UpdatePlayerStats()
+        {
             lblHitPoints.Text = player.CurrentHitPoints.ToString();
             lblGold.Text = player.Gold.ToString();
             lblExperience.Text = player.ExperiencePoints.ToString();
@@ -177,6 +181,9 @@ namespace SuperAdventure
                 btnUseWeapon.Visible = false;
                 btnUsePotion.Visible = false;
             }
+
+            // 刷新玩家状态
+            UpdatePlayerStats();
 
             // 刷新玩家的库存
             UpdateInventoryListInUI();
@@ -343,10 +350,7 @@ namespace SuperAdventure
                     rtbMessages.Text += "你获得了 " + inventoryItem.Quantity.ToString() + " 个 " + inventoryItem.Details.Name + Environment.NewLine;
                 }
                 // 刷新玩家的信息与物品
-                lblHitPoints.Text = player.CurrentHitPoints.ToString();
-                lblExperience.Text = player.ExperiencePoints.ToString();
-                lblGold.Text = player.Gold.ToString();
-                lblLevel.Text = player.Level.ToString();
+                UpdatePlayerStats();
                 // 刷新 UI
                 UpdateInventoryListInUI();
                 UpdateWeaponListInUI();
