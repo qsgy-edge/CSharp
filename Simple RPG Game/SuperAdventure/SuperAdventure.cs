@@ -165,6 +165,7 @@ namespace SuperAdventure
                 btnEast.Visible = (player.CurrentLocation.LocationToEast != null);
                 btnSouth.Visible = (player.CurrentLocation.LocationToSouth != null);
                 btnWest.Visible = (player.CurrentLocation.LocationToWest != null);
+                btnTrade.Visible = (player.CurrentLocation.VendorWorkingHere != null);
 
                 // 显示当前位置的信息
                 rtbLocation.Text = player.CurrentLocation.Name + Environment.NewLine;
@@ -187,12 +188,6 @@ namespace SuperAdventure
             }
         }
 
-        private void ScrollToBottomOfMessages()
-        {
-            rtbMessages.SelectionStart = rtbMessages.Text.Length;
-            rtbMessages.ScrollToCaret();
-        }
-
         private void SuperAdventure_FormClosing(object sender, FormClosingEventArgs e)
         {
             File.WriteAllText(PLAYER_DATA_FILE_NAME, player.ToXmlString());
@@ -200,9 +195,9 @@ namespace SuperAdventure
 
         private void btnTrade_Click(object sender, EventArgs e)
         {
-            // TradingScreen tradingScreen = new TradingScreen();
-            // tradingScreen.StartPosition = FormStartPosition.CenterParent;
-            // tradingScreen.ShowDialog(this);
+            TradingScreen tradingScreen = new TradingScreen(player);
+            tradingScreen.StartPosition = FormStartPosition.CenterParent;
+            tradingScreen.ShowDialog(this);
         }
     }
 }

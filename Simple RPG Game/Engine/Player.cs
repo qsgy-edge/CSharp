@@ -11,16 +11,13 @@ namespace Engine
         // 玩家的位置
         private Location currentLocation;
 
+        private Monster currentMonster;
+
         // 玩家的经验值
         private int experiencePoints;
 
         // 玩家的金币
         private int gold;
-
-        private Monster currentMonster;
-
-        // 玩家的事件
-        public event EventHandler<MessageEventArgs> OnMessage;
 
         // 构造函数
         private Player(int currentHitPoints, int maximumHitPoints, int gold, int experiencePoints) : base(currentHitPoints, maximumHitPoints)
@@ -30,6 +27,9 @@ namespace Engine
             Inventory = new BindingList<InventoryItem>();
             Quests = new BindingList<PlayerQuest>();
         }
+
+        // 玩家的事件
+        public event EventHandler<MessageEventArgs> OnMessage;
 
         public Location CurrentLocation
         {
@@ -154,21 +154,21 @@ namespace Engine
         }
 
         // 给与玩家任务奖励
-        public void AddItemToInventory(Item itemToAdd)
+        public void AddItemToInventory(Item itemToAdd, int quantity = 1)
         {
             InventoryItem item = Inventory.SingleOrDefault(ii => ii.Details.ID == itemToAdd.ID);
             if (item == null)
             {
                 // 玩家没有物品，添加物品
-                Inventory.Add(new InventoryItem(itemToAdd, 1));
+                Inventory.Add(new InventoryItem(itemToAdd, quantity));
             }
             else
             {
                 // 玩家有物品，增加物品数量
-                item.Quantity++;
+                item.Quantity += quantity;
             }
             // 通知界面更新
-            OnPropertyChanged("Inventory");
+            RaiseInventoryChangedEvent(itemToAdd);
         }
 
         // 判定玩家是否完成了该任务
@@ -231,130 +231,27 @@ namespace Engine
             }
         }
 
-        public void RemoveItemFromInventory(Item itemToRemove, int quantity = 1)
+        public void MoveEast()
         {
-            InventoryItem item = Inventory.SingleOrDefault(ii => ii.Details.ID == itemToRemove.ID);
-            if (item == null)
+            if (CurrentLocation.LocationToEast != null)
             {
-                // 玩家没有物品，不做任何事
-            }
-            else
-            {
-                // 玩家有物品，减少物品数量
-                item.Quantity -= quantity;
-                // 如果物品数量为0，移除物品
-                if (item.Quantity < 0)
-                {
-                    item.Quantity = 0;
-                }
-
-                // 如果物品数量为0，移除物品
-                if (item.Quantity == 0)
-                {
-                    Inventory.Remove(item);
-                }
-                // 通知界面更新
-                OnPropertyChanged("Inventory");
+                MoveTo(CurrentLocation.LocationToEast);
             }
         }
 
-        // 从玩家的物品中移除任务所需的物品
-        public void RemoveQuestCompletionItems(Quest quest)
+        public void MoveNorth()
         {
-            // 检查玩家的物品
-            foreach (QuestCompletionItem qci in quest.QuestCompletionItems)
+            if (CurrentLocation.LocationToNorth != null)
             {
-                InventoryItem item = Inventory.SingleOrDefault(ii => ii.Details.ID == qci.Details.ID);
-                if (item != null)
-                {
-                    // 玩家有物品，移除物品
-                    RemoveItemFromInventory(item.Details, qci.Quantity);
-                }
+                MoveTo(CurrentLocation.LocationToNorth);
             }
         }
 
-        // XML 序列化
-        public string ToXmlString()
+        public void MoveSouth()
         {
-            XmlDocument playerData = new XmlDocument();
-            // 创建顶级 XML 节点
-            XmlNode player = playerData.CreateElement("Player");
-            playerData.AppendChild(player);
-            // 创建 Stats 子节点来保存其他玩家统计数据节点
-            XmlNode stats = playerData.CreateElement("Stats");
-            player.AppendChild(stats);
-            // 创建其他玩家统计数据节点
-            XmlNode currentHitPoints = playerData.CreateElement("CurrentHitPoints");
-            currentHitPoints.AppendChild(playerData.CreateTextNode(this.CurrentHitPoints.ToString()));
-            stats.AppendChild(currentHitPoints);
-            XmlNode maximumHitPoints = playerData.CreateElement("MaximumHitPoints");
-            maximumHitPoints.AppendChild(playerData.CreateTextNode(this.MaximumHitPoints.ToString()));
-            stats.AppendChild(maximumHitPoints);
-            XmlNode gold = playerData.CreateElement("Gold");
-            gold.AppendChild(playerData.CreateTextNode(this.Gold.ToString()));
-            stats.AppendChild(gold);
-            XmlNode experiencePoints = playerData.CreateElement("ExperiencePoints");
-            experiencePoints.AppendChild(playerData.CreateTextNode(this.ExperiencePoints.ToString()));
-            stats.AppendChild(experiencePoints);
-            XmlNode currentLocation = playerData.CreateElement("CurrentLocation");
-            currentLocation.AppendChild(playerData.CreateTextNode(this.CurrentLocation.ID.ToString()));
-            stats.AppendChild(currentLocation);
-            if (CurrentWeapon != null)
+            if (CurrentLocation.LocationToSouth != null)
             {
-                XmlNode currentWeapon = playerData.CreateElement("CurrentWeapon");
-                currentWeapon.AppendChild(playerData.CreateTextNode(this.CurrentWeapon.ID.ToString()));
-                stats.AppendChild(currentWeapon);
-            }
-            // 创建 InventoryItems 子节点来保存玩家物品节点
-            XmlNode inventoryItems = playerData.CreateElement("InventoryItems");
-            player.AppendChild(inventoryItems);
-            // 创建玩家物品节点
-            foreach (InventoryItem item in this.Inventory)
-            {
-                XmlNode inventoryItem = playerData.CreateElement("InventoryItem");
-                XmlAttribute idAttribute = playerData.CreateAttribute("ID");
-                idAttribute.Value = item.Details.ID.ToString();
-                inventoryItem.Attributes.Append(idAttribute);
-                XmlAttribute quantityAttribute = playerData.CreateAttribute("Quantity");
-                quantityAttribute.Value = item.Quantity.ToString();
-                inventoryItem.Attributes.Append(quantityAttribute);
-                inventoryItems.AppendChild(inventoryItem);
-            }
-            // 创建 PlayerQuests 子节点来保存玩家任务节点
-            XmlNode playerQuests = playerData.CreateElement("PlayerQuests");
-            player.AppendChild(playerQuests);
-            // 创建玩家任务节点
-            foreach (PlayerQuest quest in this.Quests)
-            {
-                XmlNode playerQuest = playerData.CreateElement("PlayerQuest");
-                XmlAttribute idAttribute = playerData.CreateAttribute("ID");
-                idAttribute.Value = quest.Details.ID.ToString();
-                playerQuest.Attributes.Append(idAttribute);
-                XmlAttribute isCompletedAttribute = playerData.CreateAttribute("IsCompleted");
-                isCompletedAttribute.Value = quest.IsCompleted.ToString();
-                playerQuest.Attributes.Append(isCompletedAttribute);
-                playerQuests.AppendChild(playerQuest);
-            }
-            return playerData.InnerXml; // 返回 XML 字符串
-        }
-
-        private void RaiseInventoryChangedEvent(Item item)
-        {
-            if (item is Weapon)
-            {
-                OnPropertyChanged("Weapons");
-            }
-            if (item is HealingPotion)
-            {
-                OnPropertyChanged("Potions");
-            }
-        }
-
-        private void RaiseMessage(string message, bool addExtraNewLine = false)
-        {
-            if (OnMessage != null)
-            {
-                OnMessage(this, new MessageEventArgs(message, addExtraNewLine));
+                MoveTo(CurrentLocation.LocationToSouth);
             }
         }
 
@@ -452,36 +349,119 @@ namespace Engine
             }
         }
 
-        public void MoveNorth()
-        {
-            if (CurrentLocation.LocationToNorth != null)
-            {
-                MoveTo(CurrentLocation.LocationToNorth);
-            }
-        }
-
-        public void MoveEast()
-        {
-            if (CurrentLocation.LocationToEast != null)
-            {
-                MoveTo(CurrentLocation.LocationToEast);
-            }
-        }
-
-        public void MoveSouth()
-        {
-            if (CurrentLocation.LocationToSouth != null)
-            {
-                MoveTo(CurrentLocation.LocationToSouth);
-            }
-        }
-
         public void MoveWest()
         {
             if (CurrentLocation.LocationToWest != null)
             {
                 MoveTo(CurrentLocation.LocationToWest);
             }
+        }
+
+        public void RemoveItemFromInventory(Item itemToRemove, int quantity = 1)
+        {
+            InventoryItem item = Inventory.SingleOrDefault(ii => ii.Details.ID == itemToRemove.ID);
+            if (item == null)
+            {
+                // 玩家没有物品，不做任何事
+            }
+            else
+            {
+                // 玩家有物品，减少物品数量
+                item.Quantity -= quantity;
+                // 如果物品数量为0，移除物品
+                if (item.Quantity < 0)
+                {
+                    item.Quantity = 0;
+                }
+
+                // 如果物品数量为0，移除物品
+                if (item.Quantity == 0)
+                {
+                    Inventory.Remove(item);
+                }
+                // 通知界面更新
+                RaiseInventoryChangedEvent(itemToRemove);
+            }
+        }
+
+        // 从玩家的物品中移除任务所需的物品
+        public void RemoveQuestCompletionItems(Quest quest)
+        {
+            // 检查玩家的物品
+            foreach (QuestCompletionItem qci in quest.QuestCompletionItems)
+            {
+                InventoryItem item = Inventory.SingleOrDefault(ii => ii.Details.ID == qci.Details.ID);
+                if (item != null)
+                {
+                    // 玩家有物品，移除物品
+                    RemoveItemFromInventory(item.Details, qci.Quantity);
+                }
+            }
+        }
+
+        // XML 序列化
+        public string ToXmlString()
+        {
+            XmlDocument playerData = new XmlDocument();
+            // 创建顶级 XML 节点
+            XmlNode player = playerData.CreateElement("Player");
+            playerData.AppendChild(player);
+            // 创建 Stats 子节点来保存其他玩家统计数据节点
+            XmlNode stats = playerData.CreateElement("Stats");
+            player.AppendChild(stats);
+            // 创建其他玩家统计数据节点
+            XmlNode currentHitPoints = playerData.CreateElement("CurrentHitPoints");
+            currentHitPoints.AppendChild(playerData.CreateTextNode(this.CurrentHitPoints.ToString()));
+            stats.AppendChild(currentHitPoints);
+            XmlNode maximumHitPoints = playerData.CreateElement("MaximumHitPoints");
+            maximumHitPoints.AppendChild(playerData.CreateTextNode(this.MaximumHitPoints.ToString()));
+            stats.AppendChild(maximumHitPoints);
+            XmlNode gold = playerData.CreateElement("Gold");
+            gold.AppendChild(playerData.CreateTextNode(this.Gold.ToString()));
+            stats.AppendChild(gold);
+            XmlNode experiencePoints = playerData.CreateElement("ExperiencePoints");
+            experiencePoints.AppendChild(playerData.CreateTextNode(this.ExperiencePoints.ToString()));
+            stats.AppendChild(experiencePoints);
+            XmlNode currentLocation = playerData.CreateElement("CurrentLocation");
+            currentLocation.AppendChild(playerData.CreateTextNode(this.CurrentLocation.ID.ToString()));
+            stats.AppendChild(currentLocation);
+            if (CurrentWeapon != null)
+            {
+                XmlNode currentWeapon = playerData.CreateElement("CurrentWeapon");
+                currentWeapon.AppendChild(playerData.CreateTextNode(this.CurrentWeapon.ID.ToString()));
+                stats.AppendChild(currentWeapon);
+            }
+            // 创建 InventoryItems 子节点来保存玩家物品节点
+            XmlNode inventoryItems = playerData.CreateElement("InventoryItems");
+            player.AppendChild(inventoryItems);
+            // 创建玩家物品节点
+            foreach (InventoryItem item in this.Inventory)
+            {
+                XmlNode inventoryItem = playerData.CreateElement("InventoryItem");
+                XmlAttribute idAttribute = playerData.CreateAttribute("ID");
+                idAttribute.Value = item.Details.ID.ToString();
+                inventoryItem.Attributes.Append(idAttribute);
+                XmlAttribute quantityAttribute = playerData.CreateAttribute("Quantity");
+                quantityAttribute.Value = item.Quantity.ToString();
+                inventoryItem.Attributes.Append(quantityAttribute);
+                inventoryItems.AppendChild(inventoryItem);
+            }
+            // 创建 PlayerQuests 子节点来保存玩家任务节点
+            XmlNode playerQuests = playerData.CreateElement("PlayerQuests");
+            player.AppendChild(playerQuests);
+            // 创建玩家任务节点
+            foreach (PlayerQuest quest in this.Quests)
+            {
+                XmlNode playerQuest = playerData.CreateElement("PlayerQuest");
+                XmlAttribute idAttribute = playerData.CreateAttribute("ID");
+                idAttribute.Value = quest.Details.ID.ToString();
+                playerQuest.Attributes.Append(idAttribute);
+                XmlAttribute isCompletedAttribute = playerData.CreateAttribute("IsCompleted");
+                isCompletedAttribute.Value = quest.IsCompleted.ToString();
+                playerQuest.Attributes.Append(isCompletedAttribute);
+                playerQuests.AppendChild(playerQuest);
+            }
+            return playerData.InnerXml; // 返回 XML 字符串
         }
 
         public void UsePotion(HealingPotion potion)
@@ -522,16 +502,16 @@ namespace Engine
             }
         }
 
-        public void UseWeapon(Weapon currentWeapon)
+        public void UseWeapon(Weapon weapon)
         {
             // 计算伤害
-            int damageToMonster = RandomNumberGenerator.NumberBetween(currentWeapon.MinimumDamage, currentWeapon.MaximumDamage);
+            int damageToMonster = RandomNumberGenerator.NumberBetween(weapon.MinimumDamage, weapon.MaximumDamage);
 
             // 减少怪物生命值
             currentMonster.CurrentHitPoints -= damageToMonster;
 
             // 显示信息
-            RaiseMessage("你对 " + currentMonster.Name + " 造成了 " + damageToMonster.ToString() + " 点伤害。");
+            RaiseMessage("你对 " + currentMonster.Name + " 造成了 " + damageToMonster + " 点伤害。");
 
             // 判定怪物是否死亡
             if (currentMonster.CurrentHitPoints <= 0)
@@ -607,6 +587,26 @@ namespace Engine
         private void MoveHome()
         {
             MoveTo(World.LocationByID(World.LOCATION_ID_HOME));
+        }
+
+        private void RaiseInventoryChangedEvent(Item item)
+        {
+            if (item is Weapon)
+            {
+                OnPropertyChanged("Weapons");
+            }
+            if (item is HealingPotion)
+            {
+                OnPropertyChanged("Potions");
+            }
+        }
+
+        private void RaiseMessage(string message, bool addExtraNewLine = false)
+        {
+            if (OnMessage != null)
+            {
+                OnMessage(this, new MessageEventArgs(message, addExtraNewLine));
+            }
         }
     }
 }
