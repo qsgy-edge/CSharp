@@ -16,7 +16,7 @@ namespace SuperAdventure
         {
             InitializeComponent();
 
-            // 判定玩家数据文件是否存在
+            player = PlayerDataMapper.CreateFromDatabase();
             if (File.Exists(PLAYER_DATA_FILE_NAME))
             {
                 player = Player.CreatePlayerFromXmlString(File.ReadAllText(PLAYER_DATA_FILE_NAME));
@@ -25,6 +25,7 @@ namespace SuperAdventure
             {
                 player = Player.CreateDefaultPlayer();
             }
+
             // 绑定玩家属性到 UI
             lblHitPoints.DataBindings.Add("Text", player, "CurrentHitPoints");
             lblGold.DataBindings.Add("Text", player, "Gold");
@@ -191,6 +192,7 @@ namespace SuperAdventure
         private void SuperAdventure_FormClosing(object sender, FormClosingEventArgs e)
         {
             File.WriteAllText(PLAYER_DATA_FILE_NAME, player.ToXmlString());
+            PlayerDataMapper.SaveToDatabase(player);
         }
 
         private void btnTrade_Click(object sender, EventArgs e)
