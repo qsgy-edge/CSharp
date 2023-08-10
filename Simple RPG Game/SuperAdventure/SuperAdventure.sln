@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SuperAdventure", "SuperAdve
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine", "..\Engine\Engine.csproj", "{B2865EE2-0456-4B41-8226-8C8B39847C7B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SuperAdventureConsole", "..\SuperAdventureConsole\SuperAdventureConsole.csproj", "{B8551CC0-8276-4E61-BF24-E4DFE9D23181}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{B2865EE2-0456-4B41-8226-8C8B39847C7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B2865EE2-0456-4B41-8226-8C8B39847C7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B2865EE2-0456-4B41-8226-8C8B39847C7B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8551CC0-8276-4E61-BF24-E4DFE9D23181}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8551CC0-8276-4E61-BF24-E4DFE9D23181}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8551CC0-8276-4E61-BF24-E4DFE9D23181}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8551CC0-8276-4E61-BF24-E4DFE9D23181}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
