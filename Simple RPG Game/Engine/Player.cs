@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.Serialization.Formatters;
 using System.Xml;
 
 namespace Engine
@@ -163,8 +164,8 @@ namespace Engine
         // 给与玩家任务奖励
         public void AddItemToInventory(Item itemToAdd, int quantity = 1)
         {
-            InventoryItem item = Inventory.SingleOrDefault(ii => ii.Details.ID == itemToAdd.ID);
-            if (item == null)
+            InventoryItem existingItemInInventory = Inventory.SingleOrDefault(ii => ii.Details.ID == itemToAdd.ID);
+            if (existingItemInInventory == null)
             {
                 // 玩家没有物品，添加物品
                 Inventory.Add(new InventoryItem(itemToAdd, quantity));
@@ -172,7 +173,7 @@ namespace Engine
             else
             {
                 // 玩家有物品，增加物品数量
-                item.Quantity += quantity;
+                existingItemInInventory.Quantity += quantity;
             }
             // 通知界面更新
             RaiseInventoryChangedEvent(itemToAdd);
@@ -211,7 +212,7 @@ namespace Engine
         // 判定玩家是否有必须的物品进入某个位置
         public bool HasRequiredItemToEnterThisLocation(Location location)
         {
-            if (location.ItemRequiredToEnter == null)
+            if (location.DoesNotHaveAnItemRequiredToEnter)
             {
                 // 没有物品要求
                 return true;
@@ -262,97 +263,116 @@ namespace Engine
             }
         }
 
-        public void MoveTo(Location newLocation)
+        public void MoveTo(Location location)
         {
             // 判定地点是否需要特定物品才能进入
-            if (!HasRequiredItemToEnterThisLocation(newLocation))
+            if (PlayerDoesNotHaveTheRequiredItemToEnter(location))
             {
-                RaiseMessage("你需要 " + newLocation.ItemRequiredToEnter.Name + "才能进入。");
+                RaiseMessage("你需要 " + location.ItemRequiredToEnter.Name + "才能进入。");
                 return;
             }
 
             // 更新玩家位置
-            CurrentLocation = newLocation;
+            CurrentLocation = location;
 
             // 治疗玩家
-            CurrentHitPoints = MaximumHitPoints;
+            CompletelyHeal();
 
             // 判定地点是否有任务
-            if (newLocation.QuestAvailableHere != null)
+            if (location.HasAQuest)
             {
-                // 判定玩家是否已经接受任务，任务是否已经完成
-                bool playerAlreadyHasQuest = HasThisQuest(newLocation.QuestAvailableHere);
-                bool playerAlreadyCompletedQuest = CompletedThisQuest(newLocation.QuestAvailableHere);
-
-                // 判定玩家是否已经接受任务
-                if (playerAlreadyHasQuest)
+                if (PlayerDoesNotHaveThisQuest(location.QuestAvailableHere))
                 {
-                    // 判定玩家是否已经完成任务
-                    if (!playerAlreadyCompletedQuest)
-                    {
-                        // 判定玩家是否有任务所需的物品
-                        bool playerHasAllItemsToCompleteQuest = HasAllQuestCompletionItems(newLocation.QuestAvailableHere);
-
-                        if (playerHasAllItemsToCompleteQuest)
-                        {
-                            // 显示任务完成信息
-                            RaiseMessage("");
-                            RaiseMessage("你完成了 " + newLocation.QuestAvailableHere.Name + " 任务。");
-
-                            // 移除任务所需的物品
-                            RemoveQuestCompletionItems(newLocation.QuestAvailableHere);
-
-                            // 给与玩家任务奖励
-                            RaiseMessage("你获得了：");
-                            RaiseMessage(newLocation.QuestAvailableHere.RewardExperiencePoints.ToString() + " 经验值");
-                            RaiseMessage(newLocation.QuestAvailableHere.RewardGold.ToString() + " 金币");
-                            RaiseMessage(newLocation.QuestAvailableHere.RewardItem.Name, true);
-
-                            AddExperiencePoints(newLocation.QuestAvailableHere.RewardExperiencePoints);
-                            Gold += newLocation.QuestAvailableHere.RewardGold;
-
-                            // 玩家奖励入库
-                            AddItemToInventory(newLocation.QuestAvailableHere.RewardItem);
-
-                            // 标记任务为完成
-                            MarkQuestCompleted(newLocation.QuestAvailableHere);
-                        }
-                    }
+                    GiveQuestToPlayer(location.QuestAvailableHere);
                 }
                 else
                 {
-                    // 玩家没有接受任务，显示任务信息
-                    RaiseMessage("你接受了 " + newLocation.QuestAvailableHere.Name + " 任务。");
-                    RaiseMessage(newLocation.QuestAvailableHere.Description);
-                    RaiseMessage("要完成任务，你需要：");
-                    foreach (QuestCompletionItem qci in newLocation.QuestAvailableHere.QuestCompletionItems)
+                    if (PlayerHasNotCompleted(location.QuestAvailableHere) &&
+                       PlayerHasAllQuestCompletionItemsFor(location.QuestAvailableHere))
                     {
-                        RaiseMessage(qci.Quantity.ToString() + " " + qci.Details.Name);
+                        GivePlayerQuestRewards(location.QuestAvailableHere);
                     }
-                    RaiseMessage("");
-
-                    // 将任务添加到玩家任务列表
-                    Quests.Add(new PlayerQuest(newLocation.QuestAvailableHere));
                 }
             }
 
-            // 判定地点是否有怪物
-            if (newLocation.MonsterLivingHere != null)
+            SetTheCurrentMonsterForTheCurrentLocation(location);
+        }
+
+        private void GivePlayerQuestRewards(Quest questAvailableHere)
+        {
+            RaiseMessage("");
+            RaiseMessage("你完成了 " + questAvailableHere.Name + " 任务");
+            RaiseMessage("你获得了：");
+            RaiseMessage(questAvailableHere.RewardExperiencePoints + " 经验值");
+            RaiseMessage(questAvailableHere.RewardGold + " 金币");
+            RaiseMessage(questAvailableHere.RewardItem.Name,true);
+
+            AddExperiencePoints(questAvailableHere.RewardExperiencePoints);
+            gold += questAvailableHere.RewardGold;
+
+            RemoveQuestCompletionItems(questAvailableHere);
+            AddItemToInventory(questAvailableHere.RewardItem);
+
+            MarkQuestCompleted(questAvailableHere);
+        }
+
+        private void CompletelyHeal()
+        {
+            CurrentHitPoints = MaximumHitPoints;
+        }
+
+        private bool PlayerHasAllQuestCompletionItemsFor(Quest questAvailableHere)
+        {
+            // 判定玩家是否有完成任务必须的所有物品
+            foreach(QuestCompletionItem qci in questAvailableHere.QuestCompletionItems)
             {
-                RaiseMessage("你遇到了 " + newLocation.MonsterLivingHere.Name + "！");
-
-                // 创建怪物
-                Monster standardMonster = World.MonsterByID(newLocation.MonsterLivingHere.ID);
-                currentMonster = new Monster(standardMonster.ID, standardMonster.Name, standardMonster.MaximumDamage, standardMonster.RewardExperiencePoints, standardMonster.RewardGold, standardMonster.CurrentHitPoints, standardMonster.MaximumHitPoints);
-
-                foreach (LootItem lootItem in standardMonster.LootTable)
+                // 检查玩家拥有的所有物品，查看是否满足要求
+                if (!Inventory.Any(ii => ii.Details.ID == qci.Details.ID && ii.Quantity>=qci.Quantity))
                 {
-                    currentMonster.LootTable.Add(lootItem);
+                    return false;
                 }
             }
-            else
+
+            return true;
+        }
+
+        private void GiveQuestToPlayer(Quest questAvailableHere)
+        {
+            RaiseMessage("你接受了 " + questAvailableHere.Name + " 任务");
+            RaiseMessage(questAvailableHere.Description);
+            RaiseMessage("为了完成任务，你需要：");
+
+            foreach (QuestCompletionItem qci in questAvailableHere.QuestCompletionItems)
             {
-                currentMonster = null;
+                    RaiseMessage(qci.Quantity.ToString() + " " + qci.Details.Name);
+            }
+
+            RaiseMessage("");
+            Quests.Add(new PlayerQuest(questAvailableHere));
+        }
+
+        private bool PlayerHasNotCompleted(Quest questAvailableHere)
+        {
+            return Quests.Any(playerQuest => playerQuest.Details.ID == questAvailableHere.ID && !playerQuest.IsCompleted);
+        }
+
+        private bool PlayerDoesNotHaveThisQuest(Quest questAvailableHere)
+        {
+            return Quests.All(playerQuest=>playerQuest.Details.ID!=questAvailableHere.ID);
+        }
+
+        private bool PlayerDoesNotHaveTheRequiredItemToEnter(Location location)
+        {
+            return !HasRequiredItemToEnterThisLocation(location);
+        }
+
+        private void SetTheCurrentMonsterForTheCurrentLocation(Location location)
+        {
+            currentMonster = location.NewInstanceOfMonsterLivingHere();
+
+            if(currentMonster!=null)
+            {
+                RaiseMessage("你遇到了 " + location.MonsterLivingHere.Name);
             }
         }
 
@@ -367,20 +387,10 @@ namespace Engine
         public void RemoveItemFromInventory(Item itemToRemove, int quantity = 1)
         {
             InventoryItem item = Inventory.SingleOrDefault(ii => ii.Details.ID == itemToRemove.ID);
-            if (item == null)
-            {
-                // 玩家没有物品，不做任何事
-            }
-            else
+            if (item != null)
             {
                 // 玩家有物品，减少物品数量
                 item.Quantity -= quantity;
-                // 如果物品数量为0，移除物品
-                if (item.Quantity < 0)
-                {
-                    item.Quantity = 0;
-                }
-
                 // 如果物品数量为0，移除物品
                 if (item.Quantity == 0)
                 {
@@ -473,40 +483,37 @@ namespace Engine
 
         public void UsePotion(HealingPotion potion)
         {
-            // 增加玩家生命值
-            CurrentHitPoints = (CurrentHitPoints + potion.AmountToHeal);
+            // 显示信息
+            RaiseMessage("你喝了 " + potion.Name);
 
-            // 玩家生命值不能超过最大生命值
-            if (CurrentHitPoints > MaximumHitPoints)
-            {
-                CurrentHitPoints = MaximumHitPoints;
-            }
+            HealPlayer(potion.AmountToHeal);
 
             // 从玩家物品中移除药水
             RemoveItemFromInventory(potion, 1);
 
-            // 显示信息
-            RaiseMessage("你使用了 " + potion.Name);
-
             // 怪物攻击
-            int damageToPlayer = RandomNumberGenerator.NumberBetween(0, currentMonster.MaximumDamage);
+            LetTheMonsterAttack();
+        }
 
-            // 显示信息
-            RaiseMessage(currentMonster.Name + " 对你造成了 " + damageToPlayer.ToString() + " 点伤害。");
+        private void LetTheMonsterAttack()
+        {
+            int damagedToPlayer = RandomNumberGenerator.NumberBetween(0, currentMonster.MaximumDamage);
 
-            // 减少玩家生命值
-            CurrentHitPoints -= damageToPlayer;
+            RaiseMessage(currentMonster.Name + " 对你造成了 " + damagedToPlayer + " 点伤害");
 
-            // 判定玩家是否死亡
-            if (CurrentHitPoints <= 0)
+            CurrentHitPoints -= damagedToPlayer;
+
+            if(IsDead)
             {
-                // 玩家死亡
-                RaiseMessage("");
-                RaiseMessage("你被 " + currentMonster.Name + " 杀死了。");
+                RaiseMessage(currentMonster.Name + " 杀死了你");
 
-                // 移动玩家到家
                 MoveHome();
             }
+        }
+
+        private void HealPlayer(int hitPointsToHeal)
+        {
+            CurrentHitPoints = Math.Min(CurrentHitPoints + hitPointsToHeal, MaximumHitPoints);
         }
 
         public void UseWeapon(Weapon weapon)
@@ -514,81 +521,52 @@ namespace Engine
             // 计算伤害
             int damageToMonster = RandomNumberGenerator.NumberBetween(weapon.MinimumDamage, weapon.MaximumDamage);
 
-            // 减少怪物生命值
-            currentMonster.CurrentHitPoints -= damageToMonster;
-
-            // 显示信息
-            RaiseMessage("你对 " + currentMonster.Name + " 造成了 " + damageToMonster + " 点伤害。");
+            if (damageToMonster == 0)
+            {
+                RaiseMessage("你未命中 " + currentMonster.Name);
+            }
+            else
+            {
+                // 减少怪物生命值
+                currentMonster.CurrentHitPoints -= damageToMonster;
+                // 显示信息
+                RaiseMessage("你对 " + currentMonster.Name + " 造成了 " + damageToMonster + " 点伤害。");
+            }
 
             // 判定怪物是否死亡
-            if (currentMonster.CurrentHitPoints <= 0)
+            if (currentMonster.IsDead)
             {
-                // 怪物死亡
-                RaiseMessage("");
-                RaiseMessage("你杀死了 " + currentMonster.Name + "！");
+                LootTheCurrentMonster();
 
-                // 给与玩家奖励
-                AddExperiencePoints(currentMonster.RewardExperiencePoints);
-                RaiseMessage("你获得了 " + currentMonster.RewardExperiencePoints.ToString() + " 经验值。");
-                Gold += currentMonster.RewardGold;
-                RaiseMessage("你获得了 " + currentMonster.RewardGold.ToString() + " 金币。");
-
-                // 给与玩家物品奖励
-                List<InventoryItem> lootedItems = new List<InventoryItem>();
-                foreach (LootItem lootItem in currentMonster.LootTable)
-                {
-                    if (RandomNumberGenerator.NumberBetween(1, 100) <= lootItem.DropPercentage)
-                    {
-                        lootedItems.Add(new InventoryItem(lootItem.Details, 1));
-                    }
-                }
-
-                // 判定玩家是否有物品奖励
-                if (lootedItems.Count == 0)
-                {
-                    // 玩家没有物品奖励
-                    foreach (LootItem lootItem in currentMonster.LootTable)
-                    {
-                        if (lootItem.IsDefaultItem)
-                        {
-                            lootedItems.Add(new InventoryItem(lootItem.Details, 1));
-                        }
-                    }
-                }
-
-                // 将物品奖励添加到玩家物品列表
-                foreach (InventoryItem inventoryItem in lootedItems)
-                {
-                    AddItemToInventory(inventoryItem.Details);
-                    RaiseMessage("你获得了 " + inventoryItem.Quantity.ToString() + " " + inventoryItem.Details.Name);
-                }
-
-                RaiseMessage("");
                 // 移动玩家到当前位置
                 MoveTo(CurrentLocation);
             }
             else
             {
-                // 怪物没有死亡，计算伤害
-                int damageToPlayer = RandomNumberGenerator.NumberBetween(0, currentMonster.MaximumDamage);
-
-                // 显示信息
-                RaiseMessage(currentMonster.Name + " 对你造成了 " + damageToPlayer.ToString() + " 点伤害。");
-
-                // 减少玩家生命值
-                CurrentHitPoints -= damageToPlayer;
-
-                // 判定玩家是否死亡
-                if (CurrentHitPoints <= 0)
-                {
-                    // 玩家死亡
-                    RaiseMessage("");
-                    RaiseMessage("你被 " + currentMonster.Name + " 杀死了。");
-
-                    // 移动玩家到家
-                    MoveHome();
-                }
+                // 怪物没有死亡，怪物攻击
+                LetTheMonsterAttack();
             }
+        }
+
+        private void LootTheCurrentMonster()
+        {
+            RaiseMessage("");
+            RaiseMessage("你击败了 " + currentMonster.Name);
+            RaiseMessage("你获得了 " + currentMonster.RewardExperiencePoints + " 经验值");
+            RaiseMessage("你获得了 " + currentMonster.RewardGold + " 金币");
+
+            AddExperiencePoints(currentMonster.RewardExperiencePoints);
+            Gold += currentMonster.RewardGold;
+
+            // 将怪物的战利品交给玩家
+            foreach(InventoryItem inventoryItem in currentMonster.LootItems)
+            {
+                AddItemToInventory(inventoryItem.Details);
+
+                RaiseMessage(string.Format("你获得了 {0} {1}", inventoryItem.Quantity, inventoryItem.Description));
+            }
+
+            RaiseMessage("");
         }
 
         private void MoveHome()

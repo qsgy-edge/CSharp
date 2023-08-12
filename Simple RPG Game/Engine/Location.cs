@@ -30,6 +30,21 @@
         public Location LocationToWest { get; set; }
         public Location LocationToEast { get; set; }
 
+        // 是否有任务
+        public bool HasAQuest
+        {
+            get { return QuestAvailableHere != null; }
+        }
+
+        // 是否有进入的必须物品
+        public bool DoesNotHaveAnItemRequiredToEnter
+        {
+            get
+            {
+                return ItemRequiredToEnter == null;
+            }
+        }
+
         // 构造函数
         public Location(int id, string name, string description, Item itemRequiredToEnter = null, Quest questAvailableHere = null, Monster monsterLivingHere = null)
         {
@@ -39,6 +54,12 @@
             ItemRequiredToEnter = itemRequiredToEnter;
             QuestAvailableHere = questAvailableHere;
             MonsterLivingHere = monsterLivingHere;
+        }
+
+        // 获取怪物的实例
+        public Monster NewInstanceOfMonsterLivingHere()
+        {
+            return MonsterLivingHere == null ? null : MonsterLivingHere.NewInstanceOfMonster();
         }
     }
 }

@@ -17,13 +17,16 @@ namespace SuperAdventure
             InitializeComponent();
 
             player = PlayerDataMapper.CreateFromDatabase();
-            if (File.Exists(PLAYER_DATA_FILE_NAME))
+            if (player == null)
             {
-                player = Player.CreatePlayerFromXmlString(File.ReadAllText(PLAYER_DATA_FILE_NAME));
-            }
-            else
-            {
-                player = Player.CreateDefaultPlayer();
+                if (File.Exists(PLAYER_DATA_FILE_NAME))
+                {
+                    player = Player.CreatePlayerFromXmlString(File.ReadAllText(PLAYER_DATA_FILE_NAME));
+                }
+                else
+                {
+                    player = Player.CreateDefaultPlayer();
+                }
             }
 
             // 绑定玩家属性到 UI

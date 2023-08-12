@@ -7,6 +7,7 @@ namespace Engine
     {
         // 商人名称
         public string Name { get; set; }
+
         // 商人库存
         public BindingList<InventoryItem> Inventory { get; set; }
 
@@ -36,17 +37,9 @@ namespace Engine
         public void RemoveItemFromInventory(Item itemToRemove, int quantity = 1)
         {
             InventoryItem item = Inventory.SingleOrDefault(ii => ii.Details.ID == itemToRemove.ID);
-            if (item == null)
-            {
-                // 什么都不做
-            }
-            else
+            if (item != null)
             {
                 item.Quantity -= quantity;
-                if (item.Quantity < 0)
-                {
-                    item.Quantity = 0;
-                }
                 if (item.Quantity == 0)
                 {
                     Inventory.Remove(item);
@@ -57,6 +50,7 @@ namespace Engine
 
         // 事件
         public event PropertyChangedEventHandler PropertyChanged;
+
         // 事件处理函数
         public void OnPropertyChanged(string name)
         {

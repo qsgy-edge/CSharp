@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Engine
 {
@@ -44,16 +45,16 @@ namespace Engine
 
         private static void PopulateItems()
         {
-            Items.Add(new Weapon(ITEM_ID_RUSTY_SWORD, "生锈的剑", 0, 5,5));
-            Items.Add(new Item(ITEM_ID_RAT_TAIL, "老鼠尾巴",1));
-            Items.Add(new Item(ITEM_ID_PIECE_OF_FUR, "皮毛",1));
-            Items.Add(new Item(ITEM_ID_SNAKE_FANG, "蛇牙",1));
-            Items.Add(new Item(ITEM_ID_SNAKESKIN, "蛇皮",2));
-            Items.Add(new Weapon(ITEM_ID_CLUB, "棍子", 3, 10,8));
-            Items.Add(new HealingPotion(ITEM_ID_HEALING_POTION, "治疗药水", 5,3));
-            Items.Add(new Item(ITEM_ID_SPIDER_FANG, "蜘蛛牙",1));
-            Items.Add(new Item(ITEM_ID_SPIDER_SILK, "蜘蛛丝",1));
-            Items.Add(new Item(ITEM_ID_ADVENTURER_PASS, "勇者通行证",UNSELLABLE_ITEM_PRICE));
+            Items.Add(new Weapon(ITEM_ID_RUSTY_SWORD, "生锈的剑", 0, 5, 5));
+            Items.Add(new Item(ITEM_ID_RAT_TAIL, "老鼠尾巴", 1));
+            Items.Add(new Item(ITEM_ID_PIECE_OF_FUR, "皮毛", 1));
+            Items.Add(new Item(ITEM_ID_SNAKE_FANG, "蛇牙", 1));
+            Items.Add(new Item(ITEM_ID_SNAKESKIN, "蛇皮", 2));
+            Items.Add(new Weapon(ITEM_ID_CLUB, "棍子", 3, 10, 8));
+            Items.Add(new HealingPotion(ITEM_ID_HEALING_POTION, "治疗药水", 5, 3));
+            Items.Add(new Item(ITEM_ID_SPIDER_FANG, "蜘蛛牙", 1));
+            Items.Add(new Item(ITEM_ID_SPIDER_SILK, "蜘蛛丝", 1));
+            Items.Add(new Item(ITEM_ID_ADVENTURER_PASS, "勇者通行证", UNSELLABLE_ITEM_PRICE));
         }
 
         private static void PopulateMonsters()
@@ -144,50 +145,22 @@ namespace Engine
 
         public static Item ItemByID(int id)
         {
-            foreach (Item item in Items)
-            {
-                if (item.ID == id)
-                {
-                    return item;
-                }
-            }
-            return null;
+            return Items.SingleOrDefault(x => x.ID == id);
         }
 
         public static Monster MonsterByID(int id)
         {
-            foreach (Monster monster in Monsters)
-            {
-                if (monster.ID == id)
-                {
-                    return monster;
-                }
-            }
-            return null;
+            return Monsters.SingleOrDefault(x => x.ID == id);
         }
 
         public static Quest QuestByID(int id)
         {
-            foreach (Quest quest in Quests)
-            {
-                if (quest.ID == id)
-                {
-                    return quest;
-                }
-            }
-            return null;
+            return Quests.SingleOrDefault(x => x.ID == id);
         }
 
         public static Location LocationByID(int id)
         {
-            foreach (Location location in Locations)
-            {
-                if (location.ID == id)
-                {
-                    return location;
-                }
-            }
-            return null;
+            return Locations.SingleOrDefault(x => x.ID == id);
         }
     }
 }
