@@ -39,6 +39,9 @@ namespace Rogue
         private static readonly int inventoryHeight = 11;
         private static RLConsole inventoryConsole;
 
+        // 玩家
+        public static Player Player { get; private set; }
+
         // 地牢地图
         public static DungeonMap DungeonMap { get; private set; }
 
@@ -57,9 +60,15 @@ namespace Rogue
             statConsole = new RLConsole(statWidth, statHeight);
             inventoryConsole = new RLConsole(inventoryWidth, inventoryHeight);
 
+            // 初始化玩家
+            Player = new Player();
+
             // 初始化地牢地图
             MapGenerator mapGenerator = new MapGenerator(mapWidth, mapHeight);
             DungeonMap = mapGenerator.CreateMap();
+
+            // 更新玩家的视野
+            DungeonMap.UpdatePlayerFieldOfView();
 
             // 设置游戏的事件处理函数
 
@@ -83,6 +92,9 @@ namespace Rogue
 
             // 将地牢地图绘制到地图界面上
             DungeonMap.Draw(mapConsole);
+
+            // 将玩家绘制到地图界面上
+            Player.Draw(mapConsole, DungeonMap);
 
             // 将主界面绘制到屏幕上
             rootConsole.Draw();

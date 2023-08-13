@@ -15,6 +15,22 @@ namespace Rogue.Core
             }
         }
 
+        //
+        public void UpdatePlayerFieldOfView()
+        {
+            Player player = Game.Player;
+
+            ComputeFov(player.X, player.Y, player.Awareness, true);
+
+            foreach (Cell cell in GetAllCells())
+            {
+                if (IsInFov(cell.X, cell.Y))
+                {
+                    SetCellProperties(cell.X, cell.Y, cell.IsTransparent, cell.IsWalkable, true);
+                }
+            }
+        }
+
         private void SetConsoleSymbolForCell(RLConsole console, Cell cell)
         {
             // 当地图块未被探索时，我们不会将其绘制到地图控制台上
