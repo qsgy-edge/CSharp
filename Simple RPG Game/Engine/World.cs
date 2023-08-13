@@ -95,7 +95,7 @@ namespace Engine
 
         private static void PopulateLocations()
         {
-            // Create each location
+            // 创建每个位置
             Location home = new Location(LOCATION_ID_HOME, "家", "你的房子 你真得好好收拾收拾了");
             Location townSquare = new Location(LOCATION_ID_TOWN_SQUARE, "城镇广场", "你看到一个喷泉。");
             Vendor bobTheRatCatcher = new Vendor("捕鼠人鲍勃");
@@ -105,16 +105,17 @@ namespace Engine
             Location alchemistHut = new Location(LOCATION_ID_ALCHEMIST_HUT, "炼金术士的小屋", "货架上有很多奇怪的植物。");
             alchemistHut.QuestAvailableHere = QuestByID(QUEST_ID_CLEAR_ALCHEMIST_GARDEN);
             Location alchemistsGarden = new Location(LOCATION_ID_ALCHEMISTS_GARDEN, "炼金术士的花园", "这里生长着许多植物。");
-            alchemistsGarden.MonsterLivingHere = MonsterByID(MONSTER_ID_RAT);
+            alchemistsGarden.AddMonster(MONSTER_ID_RAT,100);
             Location farmhouse = new Location(LOCATION_ID_FARMHOUSE, "农舍", "有一座小农舍，前面有一个农夫。");
             farmhouse.QuestAvailableHere = QuestByID(QUEST_ID_CLEAR_FARMERS_FIELD);
             Location farmersField = new Location(LOCATION_ID_FARM_FIELD, "农民的田地", "你会看到这里长着一排排的蔬菜。");
-            farmersField.MonsterLivingHere = MonsterByID(MONSTER_ID_SNAKE);
+            farmersField.AddMonster(MONSTER_ID_SNAKE, 100);
             Location guardPost = new Location(LOCATION_ID_GUARD_POST, "岗哨", "这里有一个又大又难看的守卫。", ItemByID(ITEM_ID_ADVENTURER_PASS));
             Location bridge = new Location(LOCATION_ID_BRIDGE, "桥", "一座石桥横跨宽阔的河流。");
             Location spiderField = new Location(LOCATION_ID_SPIDER_FIELD, "森林", "你看到蜘蛛网覆盖了这片森林的树木。");
-            spiderField.MonsterLivingHere = MonsterByID(MONSTER_ID_GIANT_SPIDER);
-            // Link the locations together
+            spiderField.AddMonster(MONSTER_ID_GIANT_SPIDER, 100);
+
+            // 把位置连接起来
             home.LocationToNorth = townSquare;
             townSquare.LocationToNorth = alchemistHut;
             townSquare.LocationToSouth = home;
@@ -131,7 +132,8 @@ namespace Engine
             bridge.LocationToWest = guardPost;
             bridge.LocationToEast = spiderField;
             spiderField.LocationToWest = bridge;
-            // Add the locations to the static list
+
+            // 把位置添加到静态位置列表中
             Locations.Add(home);
             Locations.Add(townSquare);
             Locations.Add(guardPost);
