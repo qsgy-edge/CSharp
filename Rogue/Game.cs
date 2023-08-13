@@ -1,4 +1,5 @@
 ﻿using RLNET;
+using Rogue.Core;
 
 namespace Rogue
 {
@@ -79,19 +80,19 @@ namespace Rogue
         private static void OnRootConsoleUpdate(object sender, UpdateEventArgs e)
         {
             // 设置子界面
-            mapConsole.SetBackColor(0, 0, mapWidth, mapHeight, RLColor.Black);
-            mapConsole.Print(1, 1, "Map", RLColor.White);
+            mapConsole.SetBackColor(0, 0, mapWidth, mapHeight, Colors.FloorBackground);
+            mapConsole.Print(1, 1, "Map", Colors.TextHeading);
 
-            messageConsole.SetBackColor(0, 0, messageWidth, messageHeight, RLColor.Gray);
-            messageConsole.Print(1, 1, "Messages", RLColor.White);
+            messageConsole.SetBackColor(0, 0, messageWidth, messageHeight, Swatch.DbDeepWater);
+            messageConsole.Print(1, 1, "Messages", Colors.TextHeading);
 
-            statConsole.SetBackColor(0, 0, statWidth, statHeight, RLColor.Brown);
-            statConsole.Print(1, 1, "Stats", RLColor.White);
+            statConsole.SetBackColor(0, 0, statWidth, statHeight, Swatch.DbOldStone);
+            statConsole.Print(1, 1, "Stats", Colors.TextHeading);
 
-            inventoryConsole.SetBackColor(0, 0, inventoryWidth, inventoryHeight, RLColor.Cyan);
-            inventoryConsole.Print(1, 1, "Inventory", RLColor.White);
+            inventoryConsole.SetBackColor(0, 0, inventoryWidth, inventoryHeight, Swatch.DbWood);
+            inventoryConsole.Print(1, 1, "Inventory", Colors.TextHeading);
 
-            rootConsole.Print(10, 10, "It worked!", RLColor.White);
+            rootConsole.Print(10, 10, "It worked!", Colors.TextHeading);
         }
     }
 }
