@@ -1,8 +1,10 @@
 ﻿using RLNET;
+using RogueSharp.Core;
+using RogueSharp.System;
 
-namespace Rogue
+namespace RogueSharp
 {
-    public static class Game
+    public class Game
     {
         // 屏幕高度和宽度以图块数为单位
         private static readonly int screenWidth = 100;
@@ -37,6 +39,10 @@ namespace Rogue
         private static readonly int inventoryHeight = 11;
         private static RLConsole inventoryConsole;
 
+        //
+
+        public static DungeonMap DungeonMap { get; private set; }
+
         public static void Main(string[] args)
         {
             // 设置游戏的标题和字体
@@ -51,6 +57,9 @@ namespace Rogue
             messageConsole = new RLConsole(messageWidth, messageHeight);
             statConsole = new RLConsole(statWidth, statHeight);
             inventoryConsole = new RLConsole(inventoryWidth, inventoryHeight);
+
+            MapGenerator mapGenerator = new MapGenerator(mapWidth, mapHeight);
+            DungeonMap = mapGenerator.CreateMap();
 
             // 设置游戏的事件处理函数
 
@@ -72,7 +81,10 @@ namespace Rogue
             RLConsole.Blit(statConsole, 0, 0, statWidth, statHeight, rootConsole, mapWidth, 0);
             RLConsole.Blit(inventoryConsole, 0, 0, inventoryWidth, inventoryHeight, rootConsole, 0, 0);
 
-            // 将主界面绘制到屏幕上
+            //
+            DungeonMap.Draw(mapConsole);
+
+            // 绘制主界面
             rootConsole.Draw();
         }
 
@@ -90,8 +102,6 @@ namespace Rogue
 
             inventoryConsole.SetBackColor(0, 0, inventoryWidth, inventoryHeight, RLColor.Cyan);
             inventoryConsole.Print(1, 1, "Inventory", RLColor.White);
-
-            rootConsole.Print(10, 10, "It worked!", RLColor.White);
         }
     }
 }
