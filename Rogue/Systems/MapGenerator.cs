@@ -1,7 +1,7 @@
 ﻿using Rogue.Core;
 using RogueSharp;
 
-namespace Rogue.System
+namespace Rogue.Systems
 {
     public class MapGenerator
     {

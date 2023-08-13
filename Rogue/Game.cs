@@ -1,6 +1,6 @@
 ﻿using RLNET;
 using Rogue.Core;
-using Rogue.System;
+using Rogue.Systems;
 
 namespace Rogue
 {
@@ -39,6 +39,12 @@ namespace Rogue
         private static readonly int inventoryHeight = 11;
         private static RLConsole inventoryConsole;
 
+        // 游戏是否需要渲染
+        private static bool renderRequired = true;
+
+        // 玩家控制系统
+        public static CommandSystem CommandSystem { get; private set; }
+
         // 玩家
         public static Player Player { get; private set; }
 
@@ -60,8 +66,12 @@ namespace Rogue
             statConsole = new RLConsole(statWidth, statHeight);
             inventoryConsole = new RLConsole(inventoryWidth, inventoryHeight);
 
+            InitChildrenConsole();
+
             // 初始化玩家
             Player = new Player();
+
+            CommandSystem = new CommandSystem();
 
             // 初始化地牢地图
             MapGenerator mapGenerator = new MapGenerator(mapWidth, mapHeight);
@@ -102,10 +112,47 @@ namespace Rogue
 
         private static void OnRootConsoleUpdate(object sender, UpdateEventArgs e)
         {
-            // 设置子界面
-            mapConsole.SetBackColor(0, 0, mapWidth, mapHeight, Colors.FloorBackground);
-            mapConsole.Print(1, 1, "Map", Colors.TextHeading);
+            GetPlayerInput();
+        }
 
+        private static void GetPlayerInput()
+        {
+            bool didPlayerAct = false;
+            RLKeyPress keyPress = rootConsole.Keyboard.GetKeyPress();
+
+            if (keyPress != null)
+            {
+                if (keyPress.Key == RLKey.W)
+                {
+                    didPlayerAct = CommandSystem.MovePlayer(Direction.Up);
+                }
+                else if (keyPress.Key == RLKey.S)
+                {
+                    didPlayerAct = CommandSystem.MovePlayer(Direction.Down);
+                }
+                else if (keyPress.Key == RLKey.A)
+                {
+                    didPlayerAct = CommandSystem.MovePlayer(Direction.Left);
+                }
+                else if (keyPress.Key == RLKey.D)
+                {
+                    didPlayerAct = CommandSystem.MovePlayer(Direction.Right);
+                }
+                else if (keyPress.Key == RLKey.Escape)
+                {
+                    rootConsole.Close();
+                }
+            }
+
+            if (didPlayerAct)
+            {
+                renderRequired = true;
+            }
+        }
+
+        private static void InitChildrenConsole()
+        {
+            // 设置子界面
             messageConsole.SetBackColor(0, 0, messageWidth, messageHeight, Swatch.DbDeepWater);
             messageConsole.Print(1, 1, "Messages", Colors.TextHeading);
 
@@ -114,8 +161,6 @@ namespace Rogue
 
             inventoryConsole.SetBackColor(0, 0, inventoryWidth, inventoryHeight, Swatch.DbWood);
             inventoryConsole.Print(1, 1, "Inventory", Colors.TextHeading);
-
-            rootConsole.Print(10, 10, "It worked!", Colors.TextHeading);
         }
     }
 }

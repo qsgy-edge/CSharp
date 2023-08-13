@@ -15,7 +15,40 @@ namespace Rogue.Core
             }
         }
 
-        //
+        // 设置角色的位置，如果目标位置是可行走的，则返回 true
+        public bool SetActorPosition(Actor actor, int x, int y)
+        {
+            // 只有当目标位置是可行走的时，才能移动
+            if (GetCell(x, y).IsWalkable)
+            {
+                // 当角色移动时，我们需要将其当前位置设置为可行走的
+                SetIsWalkable(actor.X, actor.Y, true);
+
+                // 更新角色的位置
+                actor.X = x;
+                actor.Y = y;
+
+                // 角色新位置被角色占据，因此我们将其设置为不可行走的
+                SetIsWalkable(actor.X, actor.Y, false);
+
+                // 如果角色是玩家，则更新视野范围
+                if (actor is Player)
+                {
+                    UpdatePlayerFieldOfView();
+                }
+                return true;
+            }
+            return false;
+        }
+
+        //  设置地图块的可行走性
+        private void SetIsWalkable(int x, int y, bool isWalkable)
+        {
+            Cell cell = (Cell)GetCell(x, y);
+            SetCellProperties(cell.X, cell.Y, cell.IsTransparent, isWalkable, cell.IsExplored);
+        }
+
+        // 更新玩家的视野范围
         public void UpdatePlayerFieldOfView()
         {
             Player player = Game.Player;
