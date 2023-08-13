@@ -175,7 +175,7 @@ namespace SuperAdventure
                 rtbLocation.Text = player.CurrentLocation.Name + Environment.NewLine;
                 rtbLocation.Text += player.CurrentLocation.Description + Environment.NewLine;
 
-                if (player.CurrentLocation.MonsterLivingHere == null)
+                if (player.CurrentLocation.HasAMonster)
                 {
                     cboWeapons.Visible = false;
                     cboPotions.Visible = false;
@@ -203,6 +203,13 @@ namespace SuperAdventure
             TradingScreen tradingScreen = new TradingScreen(player);
             tradingScreen.StartPosition = FormStartPosition.CenterParent;
             tradingScreen.ShowDialog(this);
+        }
+
+        private void btnMap_Click(object sender, EventArgs e)
+        {
+            WorldMap worldMap = new WorldMap(player);
+            worldMap.StartPosition = FormStartPosition.CenterParent;
+            worldMap.ShowDialog(this);
         }
     }
 }

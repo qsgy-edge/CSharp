@@ -168,7 +168,7 @@ namespace SuperAdventureConsole
             }
             else if (input.Contains("攻击"))
             {
-                if (player.CurrentLocation.MonsterLivingHere == null)
+                if (player.CurrentLocation.HasAMonster)
                 {
                     Console.WriteLine("这里没有怪物");
                 }
