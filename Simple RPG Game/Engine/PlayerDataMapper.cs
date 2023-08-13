@@ -62,7 +62,7 @@ namespace Engine
                                 int questID = (int)reader["QuestID"];
                                 bool isCompleted = (bool)reader["IsCompleted"];
                                 // Build the PlayerQuest item, for this row
-                                PlayerQuest playerQuest = new PlayerQuest(World.QuestByID(questID));
+                                PlayerQuest playerQuest = new PlayerQuest(World.QuestByID(questID), questID == 1);
                                 playerQuest.IsCompleted = isCompleted;
                                 // Add the PlayerQuest to the player's property
                                 player.Quests.Add(playerQuest);

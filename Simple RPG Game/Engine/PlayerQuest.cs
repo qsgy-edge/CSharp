@@ -21,6 +21,9 @@ namespace Engine
         // 是否完成
         private bool isCompleted;
 
+        // 是否可重复
+        private bool isRepeatable;
+
         public bool IsCompleted
         {
             get
@@ -33,6 +36,19 @@ namespace Engine
             }
         }
 
+        public bool IsRepeatable
+        {
+            get
+            {
+                return isRepeatable;
+            }
+            set
+            {
+                isRepeatable = value;
+                OnPropertyChanged("IsRepeatable");
+            }
+        }
+
         // 任务名称
         public string Name
         {
@@ -40,10 +56,11 @@ namespace Engine
         }
 
         // 构造函数
-        public PlayerQuest(Quest details)
+        public PlayerQuest(Quest details, bool isRepeatable)
         {
             Details = details;
             IsCompleted = false;
+            IsRepeatable = isRepeatable;
         }
 
         // 事件

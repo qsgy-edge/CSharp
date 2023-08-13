@@ -73,7 +73,7 @@ namespace SuperAdventure
             // 绑定武器列表到 UI
             cboWeapons.DataSource = player.Weapons;
             cboWeapons.DisplayMember = "武器名称";
-            cboWeapons.ValueMember = "Id";
+            cboWeapons.ValueMember = "Name";
             if (player.CurrentWeapon != null)
             {
                 cboWeapons.SelectedItem = player.CurrentWeapon;
@@ -83,7 +83,7 @@ namespace SuperAdventure
             // 绑定药水列表到 UI
             cboPotions.DataSource = player.Potions;
             cboPotions.DisplayMember = "药水名称";
-            cboPotions.ValueMember = "Id";
+            cboPotions.ValueMember = "Name";
 
             player.PropertyChanged += PlayerOnPropertyChanged;
             player.OnMessage += DisplayMessage;
@@ -140,8 +140,8 @@ namespace SuperAdventure
                 rtbMessages.Text += Environment.NewLine;
             }
 
-            rtbMessages.ScrollToCaret();
             rtbMessages.SelectionStart = rtbMessages.Text.Length;
+            rtbMessages.ScrollToCaret();
         }
 
         private void PlayerOnPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)

@@ -120,7 +120,7 @@ namespace Engine
                 {
                     int id = Convert.ToInt32(node.Attributes["ID"].Value);
                     bool isCompleted = Convert.ToBoolean(node.Attributes["IsCompleted"].Value);
-                    PlayerQuest playerQuest = new PlayerQuest(World.QuestByID(id));
+                    PlayerQuest playerQuest = new PlayerQuest(World.QuestByID(id), id == 1);
                     playerQuest.IsCompleted = isCompleted;
                     player.Quests.Add(playerQuest);
                 }
@@ -246,10 +246,10 @@ namespace Engine
 
         public void UsePotion(HealingPotion potion)
         {
-            RaiseMessage("You drink a " + potion.Name);
+            RaiseMessage("你喝了 " + potion.Name + " 恢复了 " + potion.AmountToHeal + " 生命值");
             HealPlayer(potion.AmountToHeal);
             RemoveItemFromInventory(potion);
-            // The player used their turn to drink the potion, so let the monster attack now
+            // 玩家回合结束后怪物攻击
             LetTheMonsterAttack();
         }
 
@@ -380,7 +380,8 @@ namespace Engine
                 RaiseMessage(qci.Quantity.ToString() + " " + qci.Details.Name);
             }
             RaiseMessage("");
-            Quests.Add(new PlayerQuest(quest));
+
+            Quests.Add(new PlayerQuest(quest, quest.ID == 1));
         }
 
         private bool PlayerHasAllQuestCompletionItemsFor(Quest quest)
@@ -437,6 +438,10 @@ namespace Engine
             if (playerQuest != null)
             {
                 playerQuest.IsCompleted = true;
+                if (playerQuest.IsRepeatable)
+                {
+                    Quests.Remove(playerQuest);
+                }
             }
         }
 
