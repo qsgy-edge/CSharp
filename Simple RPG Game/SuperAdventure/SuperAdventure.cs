@@ -29,6 +29,9 @@ namespace SuperAdventure
                 }
             }
 
+            player.AddItemToInventory(World.ItemByID(World.ITEM_ID_CLUB));
+            player.AddItemToInventory(World.ItemByID(World.ITEM_ID_RUSTY_SWORD));
+
             // 绑定玩家属性到 UI
             lblHitPoints.DataBindings.Add("Text", player, "CurrentHitPoints");
             lblGold.DataBindings.Add("Text", player, "Gold");
@@ -81,7 +84,6 @@ namespace SuperAdventure
             cboPotions.DataSource = player.Potions;
             cboPotions.DisplayMember = "药水名称";
             cboPotions.ValueMember = "Id";
-            player.PropertyChanged += PlayerOnPropertyChanged;
 
             player.PropertyChanged += PlayerOnPropertyChanged;
             player.OnMessage += DisplayMessage;
@@ -175,7 +177,7 @@ namespace SuperAdventure
                 rtbLocation.Text = player.CurrentLocation.Name + Environment.NewLine;
                 rtbLocation.Text += player.CurrentLocation.Description + Environment.NewLine;
 
-                if (player.CurrentLocation.HasAMonster)
+                if (!player.CurrentLocation.HasAMonster)
                 {
                     cboWeapons.Visible = false;
                     cboPotions.Visible = false;
