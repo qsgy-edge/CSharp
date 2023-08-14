@@ -1,10 +1,21 @@
 ﻿using RLNET;
 using RogueSharp;
+using System.Collections.Generic;
 
 namespace Rogue.Core
 {
     public class DungeonMap : Map
     {
+        // 用于存储所有的房间
+        public List<Rectangle> Rooms;
+
+        // 构造函数
+        public DungeonMap()
+        {
+            // 初始化房间列表
+            Rooms = new List<Rectangle>();
+        }
+
         // 每次更新地图时，我们都会将所有的地图块绘制到地图控制台上
         public void Draw(RLConsole mapConsole)
         {

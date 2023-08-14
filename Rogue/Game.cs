@@ -46,16 +46,23 @@ namespace Rogue
         public static CommandSystem CommandSystem { get; private set; }
 
         // 玩家
-        public static Player Player { get; private set; }
+        public static Player Player { get; set; }
 
         // 地牢地图
         public static DungeonMap DungeonMap { get; private set; }
 
+        // 随机数生成器
+        public static IRandom Random { get; private set; }
+
         public static void Main(string[] args)
         {
+            // 生成随机种子
+            int seed = (int)DateTime.UtcNow.Ticks;
+            Random = new DotNetRandom(seed);
+
             // 设置游戏的标题和字体
             string fontFileName = "terminal8x8.png";
-            string consoleTitle = "RougeSharp V3 Tutorial - Level 1";
+            string consoleTitle = $"RougeSharp - Level 1 - Seed {seed}";
 
             // 设置游戏界面的字体、大小和标题
             rootConsole = new RLRootConsole(fontFileName, screenWidth, screenHeight, 8, 8, 1f, consoleTitle);
