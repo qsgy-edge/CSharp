@@ -44,6 +44,9 @@ namespace Rogue
         // 游戏是否需要渲染
         private static bool renderRequired = true;
 
+        // 游戏消息
+        public static MessageLog MessageLog { get; private set; }
+
         // 玩家控制系统
         public static CommandSystem CommandSystem { get; private set; }
 
@@ -77,6 +80,11 @@ namespace Rogue
 
             InitChildrenConsole();
 
+            // 初始化游戏消息
+            MessageLog = new MessageLog();
+            MessageLog.Add("The rogue arrives on level 1");
+            MessageLog.Add($"Level created with seed '{seed}'");
+
             CommandSystem = new CommandSystem();
 
             // 初始化地牢地图
@@ -105,6 +113,9 @@ namespace Rogue
             RLConsole.Blit(messageConsole, 0, 0, messageWidth, messageHeight, rootConsole, 0, screenHeight - messageHeight);
             RLConsole.Blit(statConsole, 0, 0, statWidth, statHeight, rootConsole, mapWidth, 0);
             RLConsole.Blit(inventoryConsole, 0, 0, inventoryWidth, inventoryHeight, rootConsole, 0, 0);
+
+            // 渲染游戏消息
+            MessageLog.Draw(messageConsole);
 
             // 将地牢地图绘制到地图界面上
             DungeonMap.Draw(mapConsole);
@@ -159,9 +170,6 @@ namespace Rogue
         private static void InitChildrenConsole()
         {
             // 设置子界面
-            messageConsole.SetBackColor(0, 0, messageWidth, messageHeight, Swatch.DbDeepWater);
-            messageConsole.Print(1, 1, "Messages", Colors.TextHeading);
-
             statConsole.SetBackColor(0, 0, statWidth, statHeight, Swatch.DbOldStone);
             statConsole.Print(1, 1, "Stats", Colors.TextHeading);
 
