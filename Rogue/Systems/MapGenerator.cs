@@ -81,6 +81,44 @@ namespace Rogue.Systems
 
             // 放置玩家
             PlacePlayer();
+
+            // 创建房间之间的通道
+            for (int r = 1; r < map.Rooms.Count; r++)
+            {
+                // 获取当前房间和上一个房间的中心点
+                Point previousRoomCenter = map.Rooms[r - 1].Center;
+                Point currentRoomCenter = map.Rooms[r].Center;
+
+                // 50%的概率先创建水平通道，再创建垂直通道
+                if (Game.Random.Next(1, 2) == 1)
+                {
+                    CreateHorizontalTunnel(previousRoomCenter.X, currentRoomCenter.X, previousRoomCenter.Y);
+                    CreateVerticalTunnel(previousRoomCenter.Y, currentRoomCenter.Y, currentRoomCenter.X);
+                }
+                else
+                {
+                    CreateVerticalTunnel(previousRoomCenter.Y, currentRoomCenter.Y, previousRoomCenter.X);
+                    CreateHorizontalTunnel(previousRoomCenter.X, currentRoomCenter.X, currentRoomCenter.Y);
+                }
+            }
+        }
+
+        // 创建水平通道
+        private void CreateHorizontalTunnel(int xStart, int xEnd, int yPosition)
+        {
+            for (int x = Math.Min(xStart, xEnd); x <= Math.Max(xStart, xEnd); x++)
+            {
+                map.SetCellProperties(x, yPosition, true, true, true);
+            }
+        }
+
+        // 创建垂直通道
+        private void CreateVerticalTunnel(int yStart, int yEnd, int xPosition)
+        {
+            for (int y = Math.Min(yStart, yEnd); y <= Math.Max(yStart, yEnd); y++)
+            {
+                map.SetCellProperties(xPosition, y, true, true, true);
+            }
         }
 
         // 放置玩家
