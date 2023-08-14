@@ -1,5 +1,7 @@
 ﻿using Rogue.Core;
+using Rogue.Monsters;
 using RogueSharp;
+using RogueSharp.DiceNotation;
 using System;
 using System.Linq;
 
@@ -65,22 +67,25 @@ namespace Rogue.Systems
                 }
             }
 
+            // 放置玩家
+            PlacePlayer();
+
+            // 放置怪物
+            PlaceMonsters();
+
             return map;
         }
 
-        // 给定地图上的一个矩形区域将该区域的单元格属性设置为 true
+        // 创建房间
         private void CreateRoom(Rectangle room)
         {
             for (int x = room.Left + 1; x < room.Right; x++)
             {
                 for (int y = room.Top + 1; y < room.Bottom; y++)
                 {
-                    map.SetCellProperties(x, y, true, true, true);
+                    map.SetCellProperties(x, y, true, true, false);
                 }
             }
-
-            // 放置玩家
-            PlacePlayer();
 
             // 创建房间之间的通道
             for (int r = 1; r < map.Rooms.Count; r++)
@@ -108,7 +113,7 @@ namespace Rogue.Systems
         {
             for (int x = Math.Min(xStart, xEnd); x <= Math.Max(xStart, xEnd); x++)
             {
-                map.SetCellProperties(x, yPosition, true, true, true);
+                map.SetCellProperties(x, yPosition, true, true, false);
             }
         }
 
@@ -117,7 +122,7 @@ namespace Rogue.Systems
         {
             for (int y = Math.Min(yStart, yEnd); y <= Math.Max(yStart, yEnd); y++)
             {
-                map.SetCellProperties(xPosition, y, true, true, true);
+                map.SetCellProperties(xPosition, y, true, true, false);
             }
         }
 
@@ -129,6 +134,33 @@ namespace Rogue.Systems
             player.Y = map.Rooms[0].Center.Y;
 
             map.AddPlayer(player);
+        }
+
+        // 放置怪物
+        public void PlaceMonsters()
+        {
+            foreach (var room in map.Rooms)
+            {
+                // 每个房间有 60% 的概率放置怪物
+                if (Dice.Roll("1D10") < 7)
+                {
+                    // 生成 1 到 4 只怪物
+                    var numberOfMonsters = Dice.Roll("1D4");
+                    for (int i = 0; i < numberOfMonsters; i++)
+                    {
+                        // 查找可用的位置
+                        Point randomRoomLocation = map.GetRandomWalkableLocationInRoom(room);
+                        if (randomRoomLocation != null)
+                        {
+                            // 生成怪物
+                            var monster = Kobold.Create(1);
+                            monster.X = randomRoomLocation.X;
+                            monster.Y = randomRoomLocation.Y;
+                            map.AddMonster(monster);
+                        }
+                    }
+                }
+            }
         }
     }
 }

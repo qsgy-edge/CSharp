@@ -9,11 +9,17 @@ namespace Rogue.Core
         // 用于存储所有的房间
         public List<Rectangle> Rooms;
 
+        // 用于存储所有的怪物
+        private readonly List<Monster> monsters;
+
         // 构造函数
         public DungeonMap()
         {
             // 初始化房间列表
             Rooms = new List<Rectangle>();
+
+            // 初始化怪物列表
+            monsters = new List<Monster>();
         }
 
         // 每次更新地图时，我们都会将所有的地图块绘制到地图控制台上
@@ -24,6 +30,53 @@ namespace Rogue.Core
             {
                 SetConsoleSymbolForCell(mapConsole, cell);
             }
+
+            foreach (Monster monster in monsters)
+            {
+                monster.Draw(mapConsole, this);
+            }
+        }
+
+        // 新建怪物
+        public void AddMonster(Monster monster)
+        {
+            monsters.Add(monster);
+            // 当怪物被添加到地图上时，我们需要将其当前位置设置为不可行走的
+            SetIsWalkable(monster.X, monster.Y, false);
+        }
+
+        // 获取可行走的随机位置
+        public Point GetRandomWalkableLocationInRoom(Rectangle room)
+        {
+            if (DoesRoomHaveWalkableSpace(room))
+            {
+                for (int i = 0; i < 100; i++)
+                {
+                    int x = Game.Random.Next(1, room.Width - 2) + room.X;
+                    int y = Game.Random.Next(1, room.Height - 2) + room.Y;
+                    if (IsWalkable(x, y))
+                    {
+                        return new Point(x, y);
+                    }
+                }
+            }
+            return default;
+        }
+
+        // 检查房间是否有可行走的空间
+        private bool DoesRoomHaveWalkableSpace(Rectangle room)
+        {
+            for (int x = 1; x <= room.Width - 2; x++)
+            {
+                for (int y = 1; y <= room.Height - 2; y++)
+                {
+                    if (IsWalkable(x + room.X, y + room.Y))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         // 新建角色

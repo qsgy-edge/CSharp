@@ -18,14 +18,16 @@ namespace Rogue.Core
         public static RLColor WallBackgroundFov = Swatch.SecondaryDarker;
         public static RLColor WallFov = Swatch.SecondaryLighter;
 
-        // 玩家相关颜色
+        // 玩家颜色
         public static RLColor Player = Swatch.DbLight;
 
-        public static RLColor Gold = Swatch.DbSun;
+        // 怪物相关颜色
+        public static RLColor KoboldColor = Swatch.DbBrightWood;
 
         // 文本相关颜色
         public static RLColor TextHeading = Swatch.DbLight;
 
+        public static RLColor Gold = Swatch.DbSun;
         public static RLColor Text = Swatch.DbLight;
     }
 }
