@@ -6,10 +6,138 @@ namespace Rogue.Core
 {
     public class Actor : IActor, IDrawable
     {
-        //
-        public string Name { get; set; }
+        // IActor
+        private int attack;
 
-        public int Awareness { get; set; }
+        private int attackChance;
+        private int awareness;
+        private int defense;
+        private int defenseChance;
+        private int gold;
+        private int health;
+        private int maxHealth;
+        private string name;
+        private int speed;
+
+        public int Attack
+        {
+            get
+            {
+                return attack;
+            }
+            set
+            {
+                attack = value;
+            }
+        }
+
+        public int AttackChance
+        {
+            get
+            {
+                return attackChance;
+            }
+            set
+            {
+                attackChance = value;
+            }
+        }
+
+        public int Awareness
+        {
+            get
+            {
+                return awareness;
+            }
+            set
+            {
+                awareness = value;
+            }
+        }
+
+        public int Defense
+        {
+            get
+            {
+                return defense;
+            }
+            set
+            {
+                defense = value;
+            }
+        }
+
+        public int DefenseChance
+        {
+            get
+            {
+                return defenseChance;
+            }
+            set
+            {
+                defenseChance = value;
+            }
+        }
+
+        public int Gold
+        {
+            get
+            {
+                return gold;
+            }
+            set
+            {
+                gold = value;
+            }
+        }
+
+        public int Health
+        {
+            get
+            {
+                return health;
+            }
+            set
+            {
+                health = value;
+            }
+        }
+
+        public int MaxHealth
+        {
+            get
+            {
+                return maxHealth;
+            }
+            set
+            {
+                maxHealth = value;
+            }
+        }
+
+        public string Name
+        {
+            get
+            {
+                return name;
+            }
+            set
+            {
+                name = value;
+            }
+        }
+
+        public int Speed
+        {
+            get
+            {
+                return speed;
+            }
+            set
+            {
+                speed = value;
+            }
+        }
 
         //
         public RLColor Color { get; set; }

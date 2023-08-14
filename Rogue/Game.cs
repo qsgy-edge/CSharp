@@ -117,11 +117,15 @@ namespace Rogue
             // 渲染游戏消息
             MessageLog.Draw(messageConsole);
 
-            // 将地牢地图绘制到地图界面上
-            DungeonMap.Draw(mapConsole);
-
-            // 将玩家绘制到地图界面上
-            Player.Draw(mapConsole, DungeonMap);
+            if (renderRequired)
+            {
+                // 将地牢地图绘制到地图界面上
+                DungeonMap.Draw(mapConsole);
+                // 将玩家绘制到地图界面上
+                Player.Draw(mapConsole, DungeonMap);
+                // 将玩家状态绘制到状态界面上
+                Player.DrawStats(statConsole);
+            }
 
             // 将主界面绘制到屏幕上
             rootConsole.Draw();
@@ -170,9 +174,6 @@ namespace Rogue
         private static void InitChildrenConsole()
         {
             // 设置子界面
-            statConsole.SetBackColor(0, 0, statWidth, statHeight, Swatch.DbOldStone);
-            statConsole.Print(1, 1, "Stats", Colors.TextHeading);
-
             inventoryConsole.SetBackColor(0, 0, inventoryWidth, inventoryHeight, Swatch.DbWood);
             inventoryConsole.Print(1, 1, "Inventory", Colors.TextHeading);
         }

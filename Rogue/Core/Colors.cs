@@ -21,7 +21,11 @@ namespace Rogue.Core
         // 玩家相关颜色
         public static RLColor Player = Swatch.DbLight;
 
-        // 文本标题颜色
+        public static RLColor Gold = Swatch.DbSun;
+
+        // 文本相关颜色
         public static RLColor TextHeading = Swatch.DbLight;
+
+        public static RLColor Text = Swatch.DbLight;
     }
 }
