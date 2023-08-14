@@ -1,6 +1,8 @@
 ﻿using RLNET;
 using Rogue.Core;
 using Rogue.Systems;
+using RogueSharp.Random;
+using System;
 
 namespace Rogue
 {
@@ -75,13 +77,10 @@ namespace Rogue
 
             InitChildrenConsole();
 
-            // 初始化玩家
-            Player = new Player();
-
             CommandSystem = new CommandSystem();
 
             // 初始化地牢地图
-            MapGenerator mapGenerator = new MapGenerator(mapWidth, mapHeight);
+            MapGenerator mapGenerator = new MapGenerator(mapWidth, mapHeight, 20, 13, 7);
             DungeonMap = mapGenerator.CreateMap();
 
             // 更新玩家的视野

@@ -26,6 +26,14 @@ namespace Rogue.Core
             }
         }
 
+        // 新建角色
+        public void AddPlayer(Player player)
+        {
+            Game.Player = player;
+            SetIsWalkable(player.X, player.Y, false);
+            UpdatePlayerFieldOfView();
+        }
+
         // 设置角色的位置，如果目标位置是可行走的，则返回 true
         public bool SetActorPosition(Actor actor, int x, int y)
         {

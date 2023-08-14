@@ -78,6 +78,19 @@ namespace Rogue.Systems
                     map.SetCellProperties(x, y, true, true, true);
                 }
             }
+
+            // 放置玩家
+            PlacePlayer();
+        }
+
+        // 放置玩家
+        private void PlacePlayer()
+        {
+            Player player = Game.Player ?? new Player();
+            player.X = map.Rooms[0].Center.X;
+            player.Y = map.Rooms[0].Center.Y;
+
+            map.AddPlayer(player);
         }
     }
 }
