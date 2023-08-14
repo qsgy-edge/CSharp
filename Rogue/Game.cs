@@ -119,8 +119,13 @@ namespace Rogue
 
             if (renderRequired)
             {
+                // 清除地图和状态界面
+                mapConsole.Clear();
+                statConsole.Clear();
+                messageConsole.Clear();
+
                 // 将地牢地图绘制到地图界面上
-                DungeonMap.Draw(mapConsole);
+                DungeonMap.Draw(mapConsole, statConsole);
                 // 将玩家绘制到地图界面上
                 Player.Draw(mapConsole, DungeonMap);
                 // 将玩家状态绘制到状态界面上

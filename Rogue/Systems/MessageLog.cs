@@ -33,7 +33,6 @@ namespace Rogue.Systems
         // 渲染消息到控制台
         public void Draw(RLConsole console)
         {
-            console.Clear();
             string[] messageArray = messages.ToArray();
             for (int i = 0; i < messageArray.Length; i++)
             {

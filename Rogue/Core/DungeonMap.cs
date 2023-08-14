@@ -23,17 +23,25 @@ namespace Rogue.Core
         }
 
         // 每次更新地图时，我们都会将所有的地图块绘制到地图控制台上
-        public void Draw(RLConsole mapConsole)
+        public void Draw(RLConsole mapConsole, RLConsole statConsole)
         {
-            mapConsole.Clear();
             foreach (Cell cell in GetAllCells())
             {
                 SetConsoleSymbolForCell(mapConsole, cell);
             }
 
+            // 记录视野内怪物的数量
+            int i = 0;
+
             foreach (Monster monster in monsters)
             {
                 monster.Draw(mapConsole, this);
+                // 检查怪物是否在玩家的视野中
+                if (IsInFov(monster.X, monster.Y))
+                {
+                    monster.DrawStats(statConsole, i);
+                    i++;
+                }
             }
         }
 
